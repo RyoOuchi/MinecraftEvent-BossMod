@@ -1,0 +1,12 @@
+# Ignore everything
+*
+
+# But track the src directory
+!src/
+!src/**
+
+# Don't forget to track this .gitignore file itself
+!.gitignore
+
+# Track the build.gradle file
+!build.gradle
