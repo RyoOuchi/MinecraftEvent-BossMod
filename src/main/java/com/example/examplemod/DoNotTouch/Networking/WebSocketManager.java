@@ -1,6 +1,9 @@
 package com.example.examplemod.DoNotTouch.Networking;
 
+import com.example.examplemod.DoNotTouch.Packets.SummonEntityPacket;
+import com.example.examplemod.ExampleMod;
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.level.Level;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
@@ -26,9 +29,11 @@ public class WebSocketManager {
                     public void onMessage(String message) {
                         System.out.println("📩 Received: " + message);
 
-                        // Safely interact with Minecraft on main thread
                         Minecraft.getInstance().execute(() -> {
-
+                            Level level = Minecraft.getInstance().level;
+                            if (level != null && Minecraft.getInstance().player != null) {
+                                ExampleMod.CHANNEL.sendToServer(new SummonEntityPacket());
+                            }
                         });
                     }
 

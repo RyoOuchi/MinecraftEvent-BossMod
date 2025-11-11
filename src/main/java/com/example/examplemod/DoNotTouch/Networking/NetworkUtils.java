@@ -13,13 +13,13 @@ import java.util.concurrent.Executors;
 public class NetworkUtils {
 
     private static final ExecutorService EXECUTOR = Executors.newCachedThreadPool();
-    public static final String BACKEND_API_URL = "https://api.example.com/";
+    public static final String BACKEND_API_URL = "https://7aadca023631.ngrok-free.app/";
 
-    public String getFullApiEndpoint(String endpoint) {
+    public static String getFullApiEndpoint(String endpoint) {
         return BACKEND_API_URL + endpoint;
     }
 
-    public JsonObject createJsonPayloadFromMap(Map<String, String> data) {
+    public static JsonObject createJsonPayloadFromMap(Map<String, String> data) {
         var jsonObjectBuilder = Json.createObjectBuilder();
         for (var entry : data.entrySet()) {
             jsonObjectBuilder.add(entry.getKey(), entry.getValue());
@@ -27,7 +27,7 @@ public class NetworkUtils {
         return jsonObjectBuilder.build();
     }
 
-    public void performApiPostRequest(String endpoint, Map<String, String> payloadData) {
+    public static void performApiPostRequest(String endpoint, Map<String, String> payloadData) {
         EXECUTOR.submit(() -> {
             try {
                 String urlStr = getFullApiEndpoint(endpoint);
@@ -35,6 +35,7 @@ public class NetworkUtils {
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("POST");
                 conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                conn.setRequestProperty("ngrok-skip-browser-warning", "true");
                 conn.setDoOutput(true);
 
                 JsonObject json = createJsonPayloadFromMap(payloadData);

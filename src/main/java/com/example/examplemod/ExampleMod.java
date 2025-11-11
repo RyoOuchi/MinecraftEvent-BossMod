@@ -1,6 +1,9 @@
 package com.example.examplemod;
 
+import com.example.examplemod.DoNotTouch.Packets.SummonEntityPacket;
+import com.example.examplemod.DoNotTouch.TestItem.TestItem;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
@@ -17,6 +20,8 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.network.NetworkRegistry;
+import net.minecraftforge.network.simple.SimpleChannel;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -31,6 +36,18 @@ public class ExampleMod {
     private static final Logger LOGGER = LogManager.getLogger();
 
 
+    // Debug Item
+    public static final Item DEBUG_ITEM = new TestItem().setRegistryName(MODID, "debug_item");
+
+    private static final String PROTOCOL_VERSION = "1.0";
+    public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
+            new ResourceLocation("examplemod", "main"),
+            () -> PROTOCOL_VERSION,
+            PROTOCOL_VERSION::equals,
+            PROTOCOL_VERSION::equals
+    );
+    private static int packetId = 0;
+
     public ExampleMod() {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::doClientStuff);
@@ -39,7 +56,9 @@ public class ExampleMod {
     }
 
     private void setup(final FMLCommonSetupEvent event) {
-
+        event.enqueueWork(() -> {
+            CHANNEL.registerMessage(packetId++, SummonEntityPacket.class, SummonEntityPacket::encode, SummonEntityPacket::decode, SummonEntityPacket::handle);
+        });
     }
 
     private void doClientStuff(final FMLClientSetupEvent event) {
@@ -54,7 +73,7 @@ public class ExampleMod {
         };
 
         private static final Item[] registerItems = {
-                // ここにItemを書いてね！
+                DEBUG_ITEM
 
         };
 
