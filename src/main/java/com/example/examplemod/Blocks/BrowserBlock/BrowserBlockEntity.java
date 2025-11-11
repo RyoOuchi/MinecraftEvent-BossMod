@@ -12,6 +12,9 @@ import com.example.examplemod.Networking.Enums.Queries;
 import com.example.examplemod.Networking.NetworkUtils.NetworkUtils;
 import com.example.examplemod.Networking.SlidingWindow;
 import com.example.examplemod.Packet.BrowserResponsePacket;
+import com.example.examplemod.Screens.BrowserScreen.BrowserLoadingScreen;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -22,14 +25,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Consumer;
 
-/**
- * ブラウザ用のブロックエンティティ。
- * <p>
- * ゲーム内ネットワークのクライアントとしてふるまい、DNS 応答処理、
- * TCP ハンドシェイク、スライディングウィンドウによる送信制御、
- * データ受信の順序制御と再構成、重複 ACK/タイムアウトに伴う再送、
- * 接続終了処理などを行います。IP は {@link BlockPos} で表現されます。
- */
 public class BrowserBlockEntity extends BlockEntity {
     // per request. Remember to reset(set to null) after each request
     private BlockPos serverIPAddress;
@@ -37,16 +32,15 @@ public class BrowserBlockEntity extends BlockEntity {
     private int duplicateAckCount = 0;
     private int lastAckNumber = -1;
 
+    // 受信済みデータのバッファ（SEQ → Body）。順不同・欠落再送のための一時領域
+    final private Map<Integer, Body> receivedDataChunks = new TreeMap<>();
+    private int expectedSeqNumber = -1;
+    private boolean endFlagReceived = false;
+
     private SlidingWindow slidingWindow;
 
-    // Stores client and server SYN numbers
     private ConnectionState connectionState;
 
-    /**
-     * エンティティ生成。
-     * @param pWorldPosition ブロック座標
-     * @param pBlockState ブロック状態
-     */
     public BrowserBlockEntity(final BlockPos pWorldPosition, final BlockState pBlockState) {
         super(ExampleMod.BROWSER_BLOCK_ENTITY, pWorldPosition, pBlockState);
     }
@@ -78,7 +72,6 @@ public class BrowserBlockEntity extends BlockEntity {
         handlers.put(ErrorCodes.NOERROR, packet -> {
             final byte[] ipBytes = packet.getData();
             this.serverIPAddress = convertBytesToBlockPos(ipBytes);
-
             System.out.println("✅ [Browser] DNS Response Success: Resolved to IP " + serverIPAddress);
 
             final Random random = new Random();
@@ -184,10 +177,7 @@ public class BrowserBlockEntity extends BlockEntity {
     }
 
 
-    // 受信済みデータのバッファ（SEQ → Body）。順不同・欠落再送のための一時領域
-    final private Map<Integer, Body> receivedDataChunks = new TreeMap<>();
-    private int expectedSeqNumber = -1;
-    private boolean endFlagReceived = false;
+
 
     /**
      * サーバからの DISCONNECT 応答受信時に、接続状態と一時データをクリアする。
@@ -343,6 +333,8 @@ public class BrowserBlockEntity extends BlockEntity {
             lastAckNumber = ackNumber;
         }
 
+        if (slidingWindow == null) return;
+
         slidingWindow.acknowledge(ackNumber);
 
         final int unackedCount = slidingWindow.getUnacknowledgedPackets().size();
@@ -377,10 +369,9 @@ public class BrowserBlockEntity extends BlockEntity {
             return;
         }
 
-        // Each SEQ corresponds to a byte offset within urlData
         int baseSeq = connectionState.getClientSeq();
-        int offset = ackNumber - baseSeq; // how far into urlData the missing data starts
-        int chunkSize = SlidingWindow.MAX_DATA_SIZE; // same as in sendUrlData
+        int offset = ackNumber - baseSeq;
+        int chunkSize = SlidingWindow.MAX_DATA_SIZE;
 
         if (offset < 0 || offset >= urlData.length) {
             System.out.println("⚠️ [Browser] Invalid ACK offset for retransmission: " + offset);
@@ -472,7 +463,6 @@ public class BrowserBlockEntity extends BlockEntity {
         System.out.println("🌐 [Browser] Sending URL data to server at " + serverIPAddress);
         System.out.println("   • Base Seq: " + baseSeq + ", Ack Base: " + ackBase);
 
-        // this puts all url packets into the queue but all won't be sent at once due to sliding window
 
         final List<byte[]> chunks = NetworkUtils.createDataChunks(urlData, chunkSize);
         for (int i = 0; i < chunks.size(); i++) {

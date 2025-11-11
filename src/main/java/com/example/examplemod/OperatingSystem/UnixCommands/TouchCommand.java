@@ -19,17 +19,14 @@ public class TouchCommand implements Command {
 
         String path = context.getFullPath(args[0]);
 
-        // Create or update file
         var fs = context.getFileSystem();
 
-        // Check if file already exists
         var file = fs.cat(path);
         if (file.isPresent()) {
             System.out.println("    File already exists: " + path);
             return;
         }
 
-        // Create empty file
         boolean created = fs.createFile(path, new byte[0]);
         if (created)
             System.out.println("    Created empty file: " + path);

@@ -51,7 +51,6 @@ public class FileSystem {
             return false;
         }
 
-        // If it's a directory
         if (node.isDirectory()) {
             DirectoryNode dir = (DirectoryNode) node;
             if (!dir.getChildren().isEmpty() && !recursive) {
@@ -68,7 +67,6 @@ public class FileSystem {
         return true;
     }
 
-    // helper
     private void deleteRecursively(DirectoryNode dir) {
         for (FileSystemNode child : dir.getChildren().values().toArray(new FileSystemNode[0])) {
             if (child.isDirectory()) {
@@ -77,10 +75,6 @@ public class FileSystem {
             dir.removeChild(child.getName());
             System.out.println("    Deleted: " + child.getFullPath());
         }
-    }
-
-    public boolean rm(String path) {
-        return rm(path, false);
     }
 
     public void ls(String path) {
@@ -177,6 +171,5 @@ public class FileSystem {
             }
         }
     }
-
 }
 

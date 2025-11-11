@@ -42,7 +42,7 @@ public class SlidingWindow {
         sendQueue.offer(packet);
     }
 
-    // 👇 Move packets from queue to in-flight window
+    // move packets from queue to in-flight window
     public List<DataPacket> getPacketsToSend() {
         List<DataPacket> ready = new ArrayList<>();
         while (!sendQueue.isEmpty() && inFlight.size() < windowSize) {

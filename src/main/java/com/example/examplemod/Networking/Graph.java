@@ -3,7 +3,6 @@ package com.example.examplemod.Networking;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -117,7 +116,7 @@ public class Graph {
 
             if (!visited.add(current)) continue;
 
-            // 🎯 If this router is a target, check if it's the closest
+            // if this router is a target, check if it's the closest
             if (targets.contains(current) && currentDist < minDistance) {
                 closestTarget = current;
                 minDistance = currentDist;

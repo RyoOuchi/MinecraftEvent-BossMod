@@ -1,8 +1,6 @@
 package com.example.examplemod.Blocks.ServerBlock;
 
-import com.example.examplemod.Blocks.WifiRouterBlock.WifiRouterBlockEntity;
 import com.example.examplemod.Screens.ServerDomainScreen.ServerDomainScreen;
-import com.example.examplemod.ServerData.DnsServerSavedData;
 import com.example.examplemod.ServerData.ServerSavedData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;

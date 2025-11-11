@@ -34,10 +34,8 @@ public class TerminalCommandPacket {
             var level = player.level;
             if (!(level.getBlockEntity(packet.pos) instanceof ServerBlockEntity serverEntity)) return;
 
-            // ✅ Run command on the server
             String result = serverEntity.executeCommand(packet.command);
 
-            // ✅ Send output back to player (client)
             serverEntity.sendTerminalOutputToClient(player, result);
         });
         ctx.get().setPacketHandled(true);

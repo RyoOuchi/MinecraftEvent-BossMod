@@ -41,14 +41,11 @@ public class BrowserDisplayScreen extends Screen {
         ));
     }
 
-    /** Parse basic HTML-like tags and split lines **/
     private void parseHTMLLikeContent(String input) {
         lines.clear();
 
-        // Replace HTML line breaks
         input = input.replace("<br>", "\n");
 
-        // Split into lines manually
         String[] rawLines = input.split("\n");
 
         for (String raw : rawLines) {
@@ -60,16 +57,13 @@ public class BrowserDisplayScreen extends Screen {
         }
     }
 
-    /** Parse simple HTML-like tags (<b>, <i>, <h1>, <color>, <a href>) **/
     private Component parseStyledText(String text) {
         MutableComponent out = new TextComponent("");
 
-        // STYLE STATE
         TextColor currentColor = TextColor.fromRgb(0xFFFFFF);
         boolean bold = false;
         boolean italic = false;
         boolean underline = false;
-        String currentHref = null; // if inside <a href="...">
 
         Pattern tokenPat = Pattern.compile("(<[^>]+>|[^<]+)");
         Matcher m = tokenPat.matcher(text);
@@ -78,7 +72,6 @@ public class BrowserDisplayScreen extends Screen {
             String token = m.group();
 
             if (token.startsWith("<")) {
-                // --- TAGS ---
                 if (token.equalsIgnoreCase("<b>")) {
                     bold = true;
                 } else if (token.equalsIgnoreCase("</b>")) {
@@ -88,7 +81,6 @@ public class BrowserDisplayScreen extends Screen {
                 } else if (token.equalsIgnoreCase("</i>")) {
                     italic = false;
                 } else if (token.equalsIgnoreCase("<h1>")) {
-                    // simple header styling: gold + bold
                     currentColor = TextColor.fromRgb(0xFFD700);
                     bold = true;
                 } else if (token.equalsIgnoreCase("</h1>")) {
@@ -115,30 +107,14 @@ public class BrowserDisplayScreen extends Screen {
                     }
                 } else if (token.equalsIgnoreCase("</color>")) {
                     currentColor = TextColor.fromRgb(0xFFFFFF);
-                } else if (token.toLowerCase().startsWith("<a ")) {
-                    // <a href="...">
-                    Matcher hrefM = Pattern.compile("href=\"([^\"]+)\"").matcher(token);
-                    if (hrefM.find()) {
-                        currentHref = hrefM.group(1);
-                        underline = true; // visual cue
-                    }
-                } else if (token.equalsIgnoreCase("</a>")) {
-                    currentHref = null;
-                    underline = false;
                 } else if (token.equalsIgnoreCase("<br>")) {
                     out.append("\n");
                 }
-                // ignore unknown tags
             } else {
-                // --- PLAIN TEXT CHUNK WITH CURRENT STYLE ---
                 Style style = Style.EMPTY.withColor(currentColor)
                         .withBold(bold)
                         .withItalic(italic)
                         .withUnderlined(underline);
-
-                if (currentHref != null) {
-                    style = style.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, currentHref));
-                }
 
                 out.append(new TextComponent(token).setStyle(style));
             }
@@ -152,10 +128,8 @@ public class BrowserDisplayScreen extends Screen {
     public void render(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
         this.renderBackground(poseStack);
 
-        // Title
-        drawCenteredString(poseStack, this.font, "🪟 Minecraft Browser", this.width / 2, 10, 0xFFFFFF);
+        drawCenteredString(poseStack, this.font, "Minecraft Browser", this.width / 2, 10, 0xFFFFFF);
 
-        // Content area
         int yStart = 30;
         int visibleLines = (this.height - yStart - 40) / LINE_HEIGHT;
 
@@ -210,7 +184,6 @@ public class BrowserDisplayScreen extends Screen {
         Minecraft.getInstance().setScreen(null);
     }
 
-    /** Helper class for each rendered line **/
     private static class FormattedLine {
         public final FormattedCharSequence text;
         public final String link;

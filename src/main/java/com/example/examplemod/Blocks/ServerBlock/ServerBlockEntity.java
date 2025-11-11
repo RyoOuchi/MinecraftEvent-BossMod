@@ -374,8 +374,7 @@ public class ServerBlockEntity extends BlockEntity {
         System.out.println("🔄 [Server] Reconstructed data so far: '" + reconstructedData + "'\n");
     }
 
-    private void handleCompleteDataTransfer(final DataPacket ackPacket, final Map<Integer, Body> delivered,
-                                           final BlockPos clientPos, final DataPacket packet, final BlockEntity routerEntity) {
+    private void handleCompleteDataTransfer(final DataPacket ackPacket, final Map<Integer, Body> delivered, final BlockPos clientPos, final DataPacket packet, final BlockEntity routerEntity) {
         final String reconstructedData = NetworkUtils.reconstructData(delivered);
         System.out.println("🏁 [Server] Final segment received and all data contiguous — complete transmission!");
         System.out.println("🎉 [Server] Full reconstructed data from client " + clientPos + ": '" + reconstructedData);

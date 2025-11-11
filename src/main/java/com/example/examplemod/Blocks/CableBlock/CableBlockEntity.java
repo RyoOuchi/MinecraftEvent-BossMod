@@ -16,12 +16,9 @@ import java.util.Queue;
 
 public class CableBlockEntity extends BlockEntity {
 
-    /** A single queue where each enqueued item carries its own sender metadata. */
     private final Queue<PacketFrame> packetQueue = new LinkedList<>();
-    /** The frame (packet + sender) currently being transmitted along this cable block. */
     private PacketFrame currentFrame;
 
-    /** Lightweight wrapper to keep sender metadata per packet. */
     private static final class PacketFrame {
         final DataPacket packet;
         final Senders sender;
@@ -35,9 +32,6 @@ public class CableBlockEntity extends BlockEntity {
         super(ExampleMod.CABLE_BLOCK_ENTITY, pWorldPosition, pBlockState);
     }
 
-    // ==============================
-    // === PACKET HANDLING LOGIC ===
-    // ==============================
 
     public void enqueuePacket(DataPacket packet, Senders sender) {
         if (packet == null || sender == null) return;
@@ -59,7 +53,7 @@ public class CableBlockEntity extends BlockEntity {
     public void tickServer(final Level level, final BlockPos pos) {
         if (level.isClientSide) return;
 
-        // 1️⃣ Fetch next frame if idle
+        // fetch next frame if idle
         processNextPacket();
         if (currentFrame == null) return;
 
@@ -75,26 +69,22 @@ public class CableBlockEntity extends BlockEntity {
         final BlockPos nextPos = (currentIndex < cablePath.size() - 1) ? cablePath.get(currentIndex + 1) : null;
 
         if (nextPos == null) {
-            // Reached end of this cable path -> handoff to adjacent router
+            // end of this cable path -> handoff to router
             System.out.println("✅ Packet reached end of path at " + pos);
             sendPacketToRouterEntity(pos, dataPacket);
             clearCurrentPacket();
             return;
         }
 
-        // Forward to next cable if available
+        // forward to next cable if available
         final CableBlockEntity nextCable = getCableEntityAtPosition(nextPos);
         if (nextCable != null) {
-            // Preserve provenance; from now on the sender is a cable hop
+            // preserve provenance; from now on the sender is a cable hop
             nextCable.enqueuePacket(dataPacket, Senders.CABLE);
             System.out.println("➡️ Handoff " + pos + " → " + nextPos + " | [" + currentFrame.sender + "]");
             clearCurrentPacket();
         }
     }
-
-    // ===========================
-    // === HELPER FUNCTIONS ===
-    // ===========================
 
     private void clearCurrentPacket() {
         this.currentFrame = null;
@@ -131,23 +121,9 @@ public class CableBlockEntity extends BlockEntity {
         }
     }
 
-    // ===========================
-    // === DEBUG HELPERS ===
-    // ===========================
 
     public boolean hasDataPacket() {
         return currentFrame != null;
     }
 
-    /** Deprecated: sender is tracked per-packet now. Kept only if other code calls it. */
-    @Deprecated
-    public void setSender(Senders sender) { /* no-op */ }
-
-    /** Deprecated: sender is tracked per-packet now. Kept only if other code calls it. */
-    @Deprecated
-    public void setSenderToNull() { /* no-op */ }
-
-    public int getQueueSize() {
-        return packetQueue.size();
-    }
 }

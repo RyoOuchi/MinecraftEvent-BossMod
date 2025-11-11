@@ -121,9 +121,6 @@ public final class NetworkUtils {
         return findCablePathBetweenRouters(level, currentPos, nextRouterPos);
     }
 
-    // ==============================
-    // === Packet Construction ===
-    // ==============================
 
     /**
      * Creates a TCP packet message from header fields and data body
@@ -158,10 +155,6 @@ public final class NetworkUtils {
         final Header ackHeader = new Header(Map.of("ACK", Integer.toString(ackNumber)));
         return ackHeader.getHeader().getBytes(StandardCharsets.UTF_8);
     }
-
-    // ==============================
-    // === Data Reassembly ===
-    // ==============================
 
     /**
      * Reconstructs a string from ordered data chunks
@@ -198,27 +191,6 @@ public final class NetworkUtils {
         return true;
     }
 
-    // ==============================
-    // === Packet Processing ===
-    // ==============================
-
-    /**
-     * Extracts header from packet data
-     */
-    public static Header extractHeader(final byte[] packetData) {
-        return new Header(packetData);
-    }
-
-    /**
-     * Extracts message from packet data
-     */
-    public static Message extractMessage(final byte[] packetData) {
-        return new Message(packetData);
-    }
-
-    /**
-     * Creates data chunks from byte array with specified chunk size
-     */
     public static List<byte[]> createDataChunks(final byte[] data, final int chunkSize) {
         final List<byte[]> chunks = new ArrayList<>();
         for (int i = 0; i < data.length; i += chunkSize) {

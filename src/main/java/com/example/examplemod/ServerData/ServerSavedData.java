@@ -54,17 +54,9 @@ public class ServerSavedData extends SavedData {
         return tag;
     }
 
-    // ✅ Add a server by name (like "google.com")
     public void addServer(String name, BlockPos pos) {
         if (!servers.containsKey(name)) {
             servers.put(name, pos);
-            setDirty();
-        }
-    }
-
-    // ✅ Remove a server by name
-    public void removeServer(String name) {
-        if (servers.remove(name) != null) {
             setDirty();
         }
     }
@@ -89,17 +81,8 @@ public class ServerSavedData extends SavedData {
     }
 
 
-    // ✅ Get a server position by domain name
-    public BlockPos getServer(String name) {
-        return servers.get(name);
-    }
-
-    // ✅ Get all servers
     public Map<String, BlockPos> getServers() {
         return servers;
     }
 
-    public boolean isValidServerAtPos(BlockPos pos) {
-        return servers.containsValue(pos);
-    }
 }

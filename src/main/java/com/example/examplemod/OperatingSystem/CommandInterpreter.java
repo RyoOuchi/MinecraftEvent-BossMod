@@ -34,23 +34,6 @@ public class CommandInterpreter {
         commands.put(cmd.getName(), cmd);
     }
 
-    public void startInteractiveShell() {
-        Scanner scanner = new Scanner(System.in);
-        System.out.println("🖥️ Virtual Unix Shell Started. Type 'help' for commands.\n");
-
-        while (true) {
-            System.out.print(context.getCurrentDirectory().getFullPath() + " $ ");
-            String input = scanner.nextLine().trim();
-
-            if (input.equals("exit")) {
-                System.out.println("👋 Exiting shell.");
-                break;
-            }
-
-            execute(input);
-        }
-    }
-
     public void execute(String input) {
         if (input.isEmpty()) return;
 

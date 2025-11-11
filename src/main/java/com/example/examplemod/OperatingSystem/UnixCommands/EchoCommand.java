@@ -25,7 +25,6 @@ public class EchoCommand implements Command {
         String textPart = split[0].trim();
         String filePath = split[1].trim();
 
-        // ✅ Use echo() instead of createFile()
         context.getFileSystem().echo(context.getFullPath(filePath), textPart);
     }
 }

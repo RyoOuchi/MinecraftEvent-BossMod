@@ -81,12 +81,12 @@ public class WifiRouterBlockEntity extends BlockEntity {
     private BlockPos getNearestDNSServerBlockPosition(final List<BlockPos> positions, final BlockPos routerPos) {
         if (positions == null || positions.isEmpty()) return null;
 
-        // 1️⃣ Find DNS servers that already have a router underneath them
+        // 1 Find DNS servers that already have a router underneath them
         final List<BlockPos> connectedDNSServers = positions.stream()
                 .filter(pos -> hasRouterAtPosition(pos.below()))
                 .toList();
 
-        // 2️⃣ If no connected DNS servers exist → return the closest DNS block itself
+        // 2 If no connected DNS servers exist → return the closest DNS block itself
         if (connectedDNSServers.isEmpty()) {
             System.out.println("⚠️ No DNS servers are connected to any router.");
             return positions.stream()
@@ -94,12 +94,12 @@ public class WifiRouterBlockEntity extends BlockEntity {
                     .orElse(null); // ✅ return the DNS block itself
         }
 
-        // 3️⃣ Convert DNS server blocks → routers below for pathfinding
+        // 3 Convert DNS server blocks → routers below for pathfinding
         final List<BlockPos> connectedDNSRouters = connectedDNSServers.stream()
                 .map(BlockPos::below)
                 .toList();
 
-        // 4️⃣ Find the closest *router* under any DNS server
+        // 4 Find the closest *router* under any DNS server
         final BlockPos nearestRouterUnderDNS = routerMap.findClosestTarget(currentPos, connectedDNSRouters);
         if (nearestRouterUnderDNS == null) {
             System.out.println("⚠️ No reachable DNS router found in network graph.");
@@ -108,11 +108,11 @@ public class WifiRouterBlockEntity extends BlockEntity {
                     .orElse(null);
         }
 
-        // 5️⃣ Find the DNS Server block above that router
+        // 5 Find the DNS Server block above that router
         final BlockPos nearestDNSBlock = nearestRouterUnderDNS.above();
         System.out.println("📡 Closest DNS Server block: " + nearestDNSBlock);
 
-        return nearestDNSBlock; // ✅ returns DNS Server Block Pos
+        return nearestDNSBlock; // returns DNS Server Block Pos
     }
 
     public void performDNSRequest(final byte[] urlBytes, final List<BlockPos> oldPath, final BlockPos clientPos) {
@@ -190,7 +190,6 @@ public class WifiRouterBlockEntity extends BlockEntity {
     public void tickServer(final Level level) {
         if (level == null || level.isClientSide()) return;
 
-        // 🟩 if idle, pick next queued task
         if (!readyToTransmit && !transmissionQueue.isEmpty()) {
             TransmissionTask nextTask = transmissionQueue.poll();
             if (nextTask != null && !nextTask.target.hasDataPacket()) {
@@ -208,7 +207,6 @@ public class WifiRouterBlockEntity extends BlockEntity {
             }
         }
 
-        // 🟨 check ongoing transmission
         if (readyToTransmit && currentTargetCable != null) {
             if (!currentTargetCable.hasDataPacket()) {
                 System.out.println("✅ Transmission complete for packet: " + new String(currentPacket.getData()));
@@ -235,7 +233,6 @@ public class WifiRouterBlockEntity extends BlockEntity {
         if (packet == null) return;
         System.out.println("📥 Router received transmitted packet: " + new String(packet.getData()));
 
-        cableBlockEntity.setSenderToNull();
 
         final List<BlockPos> routerPath = packet.getRouterPath();
         if (routerPath == null || routerPath.isEmpty()) {
@@ -245,7 +242,6 @@ public class WifiRouterBlockEntity extends BlockEntity {
 
         final BlockPos nextRouterPos = getNextRouterBlockPos(routerPath);
 
-        // 🟩 if final router
         if (nextRouterPos == null) {
             // if the packet has an error code that means that the packet is a response packet
             // if not it's a request packet
@@ -319,7 +315,6 @@ public class WifiRouterBlockEntity extends BlockEntity {
             return;
         }
 
-        // 🟨 otherwise forward to next router
         System.out.println("➡️ Forwarding to next router at: " + nextRouterPos);
         final List<BlockPos> nextCablePath = findCablePathBetweenRouters(level, currentPos, nextRouterPos);
 
@@ -385,7 +380,6 @@ public class WifiRouterBlockEntity extends BlockEntity {
         final BlockEntity firstCableBE = level.getBlockEntity(firstCablePos);
         if (!(firstCableBE instanceof CableBlockEntity cableBlockEntity)) return;
 
-        // ✅ enqueue instead of immediate send
         queueTransmission(finalPacket, cableBlockEntity);
         System.out.println("🚀 Queued server request for cable at: " + firstCablePos);
     }
@@ -407,7 +401,6 @@ public class WifiRouterBlockEntity extends BlockEntity {
             return;
         }
 
-        // ✅ enqueue instead of immediate send
         queueTransmission(dataPacket, cableBlockEntity);
         System.out.println("🚀 Queued packet for transmission to cable at: " + firstCablePos);
     }
@@ -584,7 +577,6 @@ public class WifiRouterBlockEntity extends BlockEntity {
             }
         }
 
-        // ✅ Second pass — ensure every router in the same cable cluster is connected
         // This ensures indirect routers (like {2,-60,14} → {7,-60,10}) are linked
         List<BlockPos> routers = new ArrayList<>(routerMap.getRouters());
         for (int i = 0; i < routers.size(); i++) {

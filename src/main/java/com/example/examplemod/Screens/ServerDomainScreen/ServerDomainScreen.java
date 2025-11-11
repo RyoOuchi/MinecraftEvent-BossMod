@@ -25,17 +25,14 @@ public class ServerDomainScreen extends Screen {
     protected void init() {
         super.init();
 
-        // 🧭 Center positions
         int centerX = this.width / 2;
         int centerY = this.height / 2;
 
-        // 📝 Create text box (EditBox)
         domainInput = new EditBox(
-                this.font,
-                centerX - 100, // x position
-                centerY - 20,  // y position
-                200,           // width
-                20,            // height
+                this.font, centerX - 100,
+                centerY - 20,
+                200,
+                20,
                 new TextComponent("Enter domain")
         );
 
@@ -43,7 +40,6 @@ public class ServerDomainScreen extends Screen {
         domainInput.setValue("");
         this.addRenderableWidget(domainInput);
 
-        // 🔘 Create button
         confirmButton = new Button(
                 centerX - 50,
                 centerY + 20,
@@ -66,12 +62,10 @@ public class ServerDomainScreen extends Screen {
 
         System.out.println("✅ Added server domain: " + enteredDomain);
 
-        // TODO: You can call ServerSavedData.get(level).addServer(enteredDomain, pos);
-        // or send a packet to the server side here.
 
         ExampleMod.CHANNEL.sendToServer(new AddServerPacket(enteredDomain, serverBlockPos));
 
-        this.minecraft.setScreen(null); // closes the screen
+        this.minecraft.setScreen(null);
     }
 
     @Override

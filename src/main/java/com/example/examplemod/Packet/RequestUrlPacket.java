@@ -62,8 +62,6 @@ public class RequestUrlPacket {
             if (closestRouter != null) {
                 player.sendMessage(new TextComponent("Closest router found at: " + closestRouter.getBlockPos()), player.getUUID());
 
-                // 👉 now you can call methods on closestRouter, e.g.:
-                // closestRouter.handleRequest(msg.url, player);
                 closestRouter.performDNSRequest(msg.urlByte, null, msg.pos);
 
             } else {
