@@ -1,0 +1,57 @@
+package com.example.examplemod.DoNotTouch.Networking;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+public class NetworkUtils {
+
+    private static final ExecutorService EXECUTOR = Executors.newCachedThreadPool();
+    public static final String BACKEND_API_URL = "https://api.example.com/";
+
+    public String getFullApiEndpoint(String endpoint) {
+        return BACKEND_API_URL + endpoint;
+    }
+
+    public JsonObject createJsonPayloadFromMap(Map<String, String> data) {
+        var jsonObjectBuilder = Json.createObjectBuilder();
+        for (var entry : data.entrySet()) {
+            jsonObjectBuilder.add(entry.getKey(), entry.getValue());
+        }
+        return jsonObjectBuilder.build();
+    }
+
+    public void performApiPostRequest(String endpoint, Map<String, String> payloadData) {
+        EXECUTOR.submit(() -> {
+            try {
+                String urlStr = getFullApiEndpoint(endpoint);
+                URL url = new URL(urlStr);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                conn.setDoOutput(true);
+
+                JsonObject json = createJsonPayloadFromMap(payloadData);
+                String jsonString = json.toString();
+
+                try (OutputStream os = conn.getOutputStream()) {
+                    os.write(jsonString.getBytes(StandardCharsets.UTF_8));
+                }
+
+                int status = conn.getResponseCode();
+                System.out.println("API POST Response: " + status + " from " + urlStr);
+
+                conn.disconnect();
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
+}

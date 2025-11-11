@@ -167,7 +167,7 @@ dependencies {
 
     minecraftLibrary 'com.github.RyoOuchi:AporoScriptingLanguage:v1.0.1'
 
-
+    minecraftLibrary 'org.java-websocket:Java-WebSocket:1.5.6'
 }
 
 // Example for how to get properties into the manifest for reading at runtime.
