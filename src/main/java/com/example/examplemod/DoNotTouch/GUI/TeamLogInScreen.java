@@ -40,7 +40,6 @@ public class TeamLogInScreen extends Screen {
     }
 
     private void onTeamSelected(String teamName) {
-        // TODO: handle selection (e.g., send packet to server)
         System.out.println("[TeamLogInScreen] Selected team: " + teamName);
         Minecraft.getInstance().setScreen(new TeamConfirmationScreen(teamName, this));
     }

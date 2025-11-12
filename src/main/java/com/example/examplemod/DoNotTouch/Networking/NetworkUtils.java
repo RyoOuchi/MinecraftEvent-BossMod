@@ -1,5 +1,9 @@
 package com.example.examplemod.DoNotTouch.Networking;
 
+import com.example.examplemod.DoNotTouch.ServerData.TeamSavedData;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
+
 import javax.json.Json;
 import javax.json.JsonObject;
 import java.io.OutputStream;
@@ -61,11 +65,25 @@ public class NetworkUtils {
         });
     }
 
-    public static void informBackendSummonedBoss(String bossId) {
-        //performApiPostRequest(EndPoints.SPAWNED_BOSS.getEndPointPath(), );
+    public static void informBackendSummonedBoss(final String bossId, final Level level) {
+        if (!(level instanceof ServerLevel serverLevel)) return;
+        final String teamID = TeamSavedData.get(serverLevel).getTeamId();
+        if (teamID.isEmpty()) return;
+        Map<String, String> payload = Map.of(
+                "teamID", teamID,
+                "bossID", bossId
+        );
+        performApiPostRequest(EndPoints.SPAWNED_BOSS.getEndPointPath(), payload);
     }
 
-    public static void informBackendDefeatedBoss(String bossId) {
-        //performApiPostRequest(EndPoints.DEFEATED_BOSS.getEndPointPath(), );
+    public static void informBackendDefeatedBoss(final String bossId, final Level level) {
+        if (!(level instanceof ServerLevel serverLevel)) return;
+        final String teamID = TeamSavedData.get(serverLevel).getTeamId();
+        if (teamID.isEmpty()) return;
+        Map<String, String> payload = Map.of(
+                "teamID", teamID,
+                "bossID", bossId
+        );
+        performApiPostRequest(EndPoints.DEFEATED_BOSS.getEndPointPath(), payload);
     }
 }

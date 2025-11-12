@@ -2,6 +2,8 @@ package com.example.examplemod.DoNotTouch.TestItem;
 
 import com.example.examplemod.DoNotTouch.Networking.EndPoints;
 import com.example.examplemod.DoNotTouch.Networking.NetworkUtils;
+import com.example.examplemod.DoNotTouch.ServerData.TeamSavedData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
@@ -21,9 +23,10 @@ public class TestItem extends Item {
     public InteractionResultHolder<ItemStack> use(Level pLevel, Player pPlayer, InteractionHand pUsedHand) {
         if (!pLevel.isClientSide) {
             HashMap<String, String> payload = new HashMap<>();
-            payload.put("name", "A");
-            payload.put("bossId", "1");
-            payload.put("spawned", "true");
+            final ServerLevel serverLevel = (ServerLevel) pLevel;
+            final String teamID = TeamSavedData.get(serverLevel).getTeamId();
+            payload.put("teamID", teamID);
+            payload.put("bossID", "1");
             NetworkUtils.performApiPostRequest(EndPoints.DEFEATED_BOSS.getEndPointPath(), payload);
         }
         return super.use(pLevel, pPlayer, pUsedHand);

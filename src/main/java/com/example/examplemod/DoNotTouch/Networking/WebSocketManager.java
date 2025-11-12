@@ -24,24 +24,24 @@ public class WebSocketManager {
                 client = new WebSocketClient(new URI(serverUri)) {
                     @Override
                     public void onOpen(ServerHandshake handshake) {
-                        System.out.println("✅ WebSocket connected: " + serverUri);
+                        System.out.println("[WebSocketManager] WebSocket connected: " + serverUri);
                     }
 
                     @Override
                     public void onMessage(String message) {
-                        System.out.println("📩 Received: " + message);
+                        System.out.println("[WebSocketManager] Received: " + message);
 
                         Minecraft.getInstance().execute(() -> {
                             Level level = Minecraft.getInstance().level;
                             if (level != null && Minecraft.getInstance().player != null) {
-                                ExampleMod.CHANNEL.sendToServer(new SummonEntityPacket());
+                                ExampleMod.CHANNEL.sendToServer(new SummonEntityPacket(message));
                             }
                         });
                     }
 
                     @Override
                     public void onClose(int code, String reason, boolean remote) {
-                        System.out.println("❌ WebSocket closed: " + reason);
+                        System.out.println("[WebSocketManager] WebSocket closed: " + reason);
                     }
 
                     @Override
