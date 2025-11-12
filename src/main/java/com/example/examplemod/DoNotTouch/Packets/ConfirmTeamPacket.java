@@ -3,8 +3,6 @@ package com.example.examplemod.DoNotTouch.Packets;
 import com.example.examplemod.DoNotTouch.ServerData.TeamSavedData;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.level.Level;
 import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;

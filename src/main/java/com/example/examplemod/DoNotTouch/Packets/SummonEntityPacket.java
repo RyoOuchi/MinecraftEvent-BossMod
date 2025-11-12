@@ -1,8 +1,8 @@
 package com.example.examplemod.DoNotTouch.Packets;
 
+import com.example.examplemod.DoNotTouch.ImportantConstants;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.network.NetworkEvent;
 
@@ -18,12 +18,12 @@ public class SummonEntityPacket {
         context.get().enqueueWork(() -> {
             ServerPlayer player = context.get().getSender();
             if (player != null) {
-                Level level = player.level;
-                var pig = EntityType.PIG.create(level);
-                if (pig != null) {
-                    pig.setPos(player.getX(), player.getY(), player.getZ());
-                    level.addFreshEntity(pig);
-                    System.out.println("🐷 [Server] Pig spawned for " + player.getName().getString());
+                final Level level = player.level;
+                var entity = ImportantConstants.BOSS_ENTITY_TYPE.create(level);
+                if (entity != null) {
+                    entity.setPos(player.getX(), player.getY(), player.getZ());
+                    level.addFreshEntity(entity);
+                    System.out.println("[SummonEntityPacket] Boss spawned for " + player.getName().getString() + ", With ID of: " + entity.getId());
                 }
             }
         });

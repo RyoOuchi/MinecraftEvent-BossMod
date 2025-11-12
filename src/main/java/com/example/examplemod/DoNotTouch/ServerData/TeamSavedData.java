@@ -16,7 +16,7 @@ public class TeamSavedData extends SavedData {
 
     public void setTeamId(String teamId) {
         this.teamId = teamId;
-        this.setDirty(); // Mark for saving
+        this.setDirty();
     }
 
     public static TeamSavedData get(ServerLevel level) {

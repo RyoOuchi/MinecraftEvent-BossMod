@@ -10,10 +10,11 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import static com.example.examplemod.DoNotTouch.ImportantConstants.BACKEND_API_URL;
+
 public class NetworkUtils {
 
     private static final ExecutorService EXECUTOR = Executors.newCachedThreadPool();
-    public static final String BACKEND_API_URL = "://7aadca023631.ngrok-free.app";
 
     public static String getFullApiEndpoint(String endpoint) {
         return "https" + BACKEND_API_URL + endpoint;
