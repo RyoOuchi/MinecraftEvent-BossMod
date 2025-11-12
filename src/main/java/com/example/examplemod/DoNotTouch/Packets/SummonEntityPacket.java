@@ -1,5 +1,6 @@
 package com.example.examplemod.DoNotTouch.Packets;
 
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
@@ -9,8 +10,8 @@ import java.util.function.Supplier;
 
 public class SummonEntityPacket {
     public SummonEntityPacket() {}
-    public static void encode(SummonEntityPacket pkt, net.minecraft.network.FriendlyByteBuf buf) {}
-    public static SummonEntityPacket decode(net.minecraft.network.FriendlyByteBuf buf) {
+    public static void encode(SummonEntityPacket pkt, FriendlyByteBuf buf) {}
+    public static SummonEntityPacket decode(FriendlyByteBuf buf) {
         return new SummonEntityPacket();
     }
     public void handle(Supplier<NetworkEvent.Context> context) {

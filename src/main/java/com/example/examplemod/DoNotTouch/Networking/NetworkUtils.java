@@ -13,10 +13,14 @@ import java.util.concurrent.Executors;
 public class NetworkUtils {
 
     private static final ExecutorService EXECUTOR = Executors.newCachedThreadPool();
-    public static final String BACKEND_API_URL = "https://7aadca023631.ngrok-free.app/";
+    public static final String BACKEND_API_URL = "://7aadca023631.ngrok-free.app";
 
     public static String getFullApiEndpoint(String endpoint) {
-        return BACKEND_API_URL + endpoint;
+        return "https" + BACKEND_API_URL + endpoint;
+    }
+
+    public static String getFullSocketURL() {
+        return "wss" + BACKEND_API_URL;
     }
 
     public static JsonObject createJsonPayloadFromMap(Map<String, String> data) {
@@ -54,5 +58,13 @@ public class NetworkUtils {
                 e.printStackTrace();
             }
         });
+    }
+
+    public static void informBackendSummonedBoss(String bossId) {
+        //performApiPostRequest(EndPoints.SPAWNED_BOSS.getEndPointPath(), );
+    }
+
+    public static void informBackendDefeatedBoss(String bossId) {
+        //performApiPostRequest(EndPoints.DEFEATED_BOSS.getEndPointPath(), );
     }
 }

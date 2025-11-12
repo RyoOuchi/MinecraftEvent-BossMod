@@ -15,6 +15,8 @@ public class WebSocketManager {
 
     private static final ExecutorService EXECUTOR = Executors.newSingleThreadExecutor();
     private WebSocketClient client;
+    public static final String WEBSOCKET_URL = NetworkUtils.getFullSocketURL();
+
 
     public void connect(String serverUri) {
         EXECUTOR.submit(() -> {

@@ -1,5 +1,7 @@
 package com.example.examplemod;
 
+import com.example.examplemod.DoNotTouch.Packets.ConfirmTeamPacket;
+import com.example.examplemod.DoNotTouch.Packets.OpenGuiPacket;
 import com.example.examplemod.DoNotTouch.Packets.SummonEntityPacket;
 import com.example.examplemod.DoNotTouch.TestItem.TestItem;
 import net.minecraft.resources.ResourceKey;
@@ -58,6 +60,8 @@ public class ExampleMod {
     private void setup(final FMLCommonSetupEvent event) {
         event.enqueueWork(() -> {
             CHANNEL.registerMessage(packetId++, SummonEntityPacket.class, SummonEntityPacket::encode, SummonEntityPacket::decode, SummonEntityPacket::handle);
+            CHANNEL.registerMessage(packetId++, OpenGuiPacket.class, OpenGuiPacket::encode, OpenGuiPacket::decode, OpenGuiPacket::handle);
+            CHANNEL.registerMessage(packetId++, ConfirmTeamPacket.class, ConfirmTeamPacket::encode, ConfirmTeamPacket::decode, ConfirmTeamPacket::handle);
         });
     }
 
