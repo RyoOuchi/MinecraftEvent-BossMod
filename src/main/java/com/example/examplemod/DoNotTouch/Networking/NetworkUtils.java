@@ -66,8 +66,8 @@ public class NetworkUtils {
         });
     }
 
-    public static void informDiscordOfSummonBossEvent(String teamID) {
-        final String message = "チーム " + teamID + "がボスを召喚しました！";
+    public static void informDiscordOfStartBossFightEvent(String teamID) {
+        final String message = "チーム " + teamID + "がボスと戦い始めました！";
 
         try {
             URL url = new URL(ImportantConstants.DISCORD_WEBHOOK_URL);
@@ -114,16 +114,16 @@ public class NetworkUtils {
         }
     }
 
-    public static void informBackendSummonedBoss(final String bossId, final Level level) {
+    public static void informBackendStartedBossFight(final int bossId, final Level level) {
         if (!(level instanceof ServerLevel serverLevel)) return;
         final String teamID = TeamSavedData.get(serverLevel).getTeamId();
         if (teamID.isEmpty()) return;
         Map<String, String> payload = Map.of(
                 "teamID", teamID,
-                "bossID", bossId
+                "bossID", String.valueOf(bossId)
         );
         performApiPostRequest(EndPoints.SPAWNED_BOSS.getEndPointPath(), payload);
-        informDiscordOfSummonBossEvent(teamID);
+        informDiscordOfStartBossFightEvent(teamID);
     }
 
     public static void informBackendDefeatedBoss(final String bossId, final Level level) {
