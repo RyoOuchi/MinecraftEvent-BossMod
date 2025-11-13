@@ -126,13 +126,13 @@ public class NetworkUtils {
         informDiscordOfStartBossFightEvent(teamID);
     }
 
-    public static void informBackendDefeatedBoss(final String bossId, final Level level) {
+    public static void informBackendDefeatedBoss(final int bossId, final Level level) {
         if (!(level instanceof ServerLevel serverLevel)) return;
         final String teamID = TeamSavedData.get(serverLevel).getTeamId();
         if (teamID.isEmpty()) return;
         Map<String, String> payload = Map.of(
                 "teamID", teamID,
-                "bossID", bossId
+                "bossID", String.valueOf(bossId)
         );
         performApiPostRequest(EndPoints.DEFEATED_BOSS.getEndPointPath(), payload);
         informDiscordOfDefeatedBossEvent(teamID);
