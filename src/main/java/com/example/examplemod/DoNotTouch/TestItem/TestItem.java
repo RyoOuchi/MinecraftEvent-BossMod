@@ -28,6 +28,7 @@ public class TestItem extends Item {
             payload.put("teamID", teamID);
             payload.put("bossID", "1");
             NetworkUtils.performApiPostRequest(EndPoints.DEFEATED_BOSS.getEndPointPath(), payload);
+            NetworkUtils.informDiscordOfSummonBossEvent("A");
         }
         return super.use(pLevel, pPlayer, pUsedHand);
     }

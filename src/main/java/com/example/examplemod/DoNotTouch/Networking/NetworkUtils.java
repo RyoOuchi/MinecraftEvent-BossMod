@@ -1,5 +1,6 @@
 package com.example.examplemod.DoNotTouch.Networking;
 
+import com.example.examplemod.DoNotTouch.ImportantConstants;
 import com.example.examplemod.DoNotTouch.ServerData.TeamSavedData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
@@ -65,6 +66,54 @@ public class NetworkUtils {
         });
     }
 
+    public static void informDiscordOfSummonBossEvent(String teamID) {
+        final String message = "チーム " + teamID + "がボスを召喚しました！";
+
+        try {
+            URL url = new URL(ImportantConstants.DISCORD_WEBHOOK_URL);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+            conn.setDoOutput(true);
+
+            String payload = "{\"content\": \"" + message + "\"}";
+
+            try (OutputStream os = conn.getOutputStream()) {
+                os.write(payload.getBytes(StandardCharsets.UTF_8));
+            }
+
+            int responseCode = conn.getResponseCode();
+            System.out.println("Discord Webhook Response (Summon): " + responseCode);
+            conn.disconnect();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void informDiscordOfDefeatedBossEvent(String teamID) {
+        final String message = "チーム " + teamID + "がボスを倒しました！";
+
+        try {
+            URL url = new URL(ImportantConstants.DISCORD_WEBHOOK_URL);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+            conn.setDoOutput(true);
+
+            String payload = "{\"content\": \"" + message + "\"}";
+
+            try (OutputStream os = conn.getOutputStream()) {
+                os.write(payload.getBytes(StandardCharsets.UTF_8));
+            }
+
+            int responseCode = conn.getResponseCode();
+            System.out.println("Discord Webhook Response (Defeated): " + responseCode);
+            conn.disconnect();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public static void informBackendSummonedBoss(final String bossId, final Level level) {
         if (!(level instanceof ServerLevel serverLevel)) return;
         final String teamID = TeamSavedData.get(serverLevel).getTeamId();
@@ -74,6 +123,7 @@ public class NetworkUtils {
                 "bossID", bossId
         );
         performApiPostRequest(EndPoints.SPAWNED_BOSS.getEndPointPath(), payload);
+        informDiscordOfSummonBossEvent(teamID);
     }
 
     public static void informBackendDefeatedBoss(final String bossId, final Level level) {
@@ -85,5 +135,6 @@ public class NetworkUtils {
                 "bossID", bossId
         );
         performApiPostRequest(EndPoints.DEFEATED_BOSS.getEndPointPath(), payload);
+        informDiscordOfDefeatedBossEvent(teamID);
     }
 }
