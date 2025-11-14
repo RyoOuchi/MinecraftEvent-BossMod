@@ -32,7 +32,7 @@ import org.apache.logging.log4j.Logger;
 public class ExampleMod {
 
     //MODID
-    public static final String MODID = "examplemod";
+    public static final String MODID = "bossevent";
 
     // Directly reference a log4j logger.
     private static final Logger LOGGER = LogManager.getLogger();
@@ -43,7 +43,7 @@ public class ExampleMod {
 
     private static final String PROTOCOL_VERSION = "1.0";
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
-            new ResourceLocation("examplemod", "main"),
+            new ResourceLocation(MODID, "main"),
             () -> PROTOCOL_VERSION,
             PROTOCOL_VERSION::equals,
             PROTOCOL_VERSION::equals
