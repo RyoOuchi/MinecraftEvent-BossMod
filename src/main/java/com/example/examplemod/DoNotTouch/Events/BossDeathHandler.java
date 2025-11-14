@@ -29,6 +29,7 @@ public class BossDeathHandler {
             if (integer.equals(boss.getId())) {
                 bossIDSavedData.removeBossId(integer);
                 NetworkUtils.informBackendDefeatedBoss(boss.getId(), level);
+                System.out.println("[BossDeathHandler] Informed backend of boss defeat and removed boss ID from saved data.");
             }
         });
     }
