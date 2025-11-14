@@ -5,11 +5,13 @@ buildscript {
         maven { url = 'https://maven.parchmentmc.org' }
         maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
         mavenCentral()
+        mavenLocal()
     }
     dependencies {
         classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
         classpath 'org.parchmentmc:librarian:1.+'
         classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
+
     }
 }
 apply plugin: 'net.minecraftforge.gradle'
@@ -26,8 +28,8 @@ apply from: "${project.rootDir}/setup/scripts/gradle/mod_exporter.gradle"
 apply from: "${project.rootDir}/setup/scripts/gradle/setup_1day.gradle"
 
 version = '1.0'
-group = 'com.yourname.bossevent' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
-archivesBaseName = 'bossevent'
+group = 'com.yourname.examplemod' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+archivesBaseName = 'examplemod'
 
 // Mojang ships Java 17 to end users in 1.18+, so your mod should target Java 17.
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
@@ -68,7 +70,7 @@ minecraft {
             property 'forge.logging.console.level', 'debug'
 
             mods {
-                bossevent {
+                examplemod {
                     source sourceSets.main
                 }
             }
@@ -90,7 +92,7 @@ minecraft {
             property 'forge.logging.console.level', 'debug'
 
             mods {
-                bossevent {
+                examplemod {
                     source sourceSets.main
                 }
             }
@@ -112,10 +114,10 @@ minecraft {
             property 'forge.logging.console.level', 'debug'
 
             // Specify the modid for data generation, where to output the resulting resource, and where to look for existing resources.
-            args '--mod', 'bossevent', '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
+            args '--mod', 'examplemod', '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
 
             mods {
-                bossevent {
+                examplemod {
                     source sourceSets.main
                 }
             }
@@ -143,6 +145,10 @@ repositories {
         name = "JitPack"
         url = uri("https://jitpack.io")
     }
+
+//    maven {
+//        //url = uri("/Users/RyoOuchi/dev/minecraftmodding/BossMod/mcmodsrepo")
+//    }
 }
 
 dependencies {
@@ -159,6 +165,8 @@ dependencies {
     // Examples using mod jars from ./libs
     // implementation fg.deobf("blank:coolmod-${mc_version}:${coolmod_version}")
     implementation fg.deobf('com.github.glitchfiend:TerraBlender-forge:1.18.1-1.1.0.77')
+    //implementation fg.deobf("com.yourname.bossmod:bossmod:1.0")
+
 
     // For more info...
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
