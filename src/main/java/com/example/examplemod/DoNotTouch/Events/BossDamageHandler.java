@@ -24,8 +24,7 @@ public class BossDamageHandler {
         if (boss.getPersistentData().getBoolean("HasBeenHitOnce")) return;
 
         boss.getPersistentData().putBoolean("HasBeenHitOnce", true);
-        System.out.println("[BossDamageHandler] FIRST HIT! Player " +
-                player.getName().getString() + " damaged the boss.");
+        System.out.println("[BossDamageHandler] FIRST HIT! Player " + player.getName().getString() + " damaged the boss.");
         NetworkUtils.informBackendStartedBossFight(boss.getId(), event.getEntity().level);
     }
 }

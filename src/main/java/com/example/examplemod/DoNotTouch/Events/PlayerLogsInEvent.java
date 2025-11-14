@@ -23,13 +23,9 @@ public class PlayerLogsInEvent {
         final String teamId = teamSavedData.getTeamId();
 
         if (teamId.isEmpty()) {
-            ExampleMod.CHANNEL.send(
-                    PacketDistributor.PLAYER.with(() -> serverPlayer),
-                    new OpenGuiPacket()
-            );
+            ExampleMod.CHANNEL.send(PacketDistributor.PLAYER.with(() -> serverPlayer), new OpenGuiPacket());
             return;
         }
-
         System.out.println("[PlayerLogsInEvent] Already assigned to team: " + teamId);
         serverPlayer.sendMessage(new TextComponent("チーム：" + teamId), serverPlayer.getUUID());
     }

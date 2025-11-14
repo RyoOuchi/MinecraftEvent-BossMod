@@ -19,7 +19,7 @@ public class BossDeathHandler {
         final Level level = entity.level;
         if (level.isClientSide) return;
         if (!entity.getType().equals(ImportantConstants.BOSS_ENTITY_TYPE)) return;
-        System.out.println("💀 Boss has died!");
+        System.out.println("[BossDeathHandler] Boss has died!");
         final LivingEntity boss = (LivingEntity) entity;
         NetworkUtils.informBackendDefeatedBoss(boss.getId(), level);
     }

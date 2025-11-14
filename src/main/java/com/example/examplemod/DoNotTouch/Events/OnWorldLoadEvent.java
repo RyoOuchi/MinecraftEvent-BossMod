@@ -22,7 +22,6 @@ public class OnWorldLoadEvent {
                 WS_MANAGER.connect(WEBSOCKET_URL);
             }
         }
-
     }
 
     @SubscribeEvent
