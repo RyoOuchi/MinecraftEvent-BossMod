@@ -3,6 +3,8 @@ package com.example.examplemod.DoNotTouch.apolloboss;
 import com.example.examplemod.ExampleMod;
 import com.mojang.math.Vector3f;
 import net.minecraft.core.particles.DustParticleOptions;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -357,5 +359,10 @@ public class ApolloBoss extends Monster implements IAnimatable {
     public void stopSeenByPlayer(ServerPlayer pPlayer) {
         super.stopSeenByPlayer(pPlayer);
         this.bossEvent.removePlayer(pPlayer);
+    }
+
+    @Override
+    public Component getDisplayName() {
+        return new TextComponent("激おこアポロ");
     }
 }
