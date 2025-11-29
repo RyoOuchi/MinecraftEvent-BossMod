@@ -1,15 +1,23 @@
 package com.example.examplemod;
 
+import com.example.examplemod.DoNotTouch.ChristmasTree.ChristmasTree;
+import com.example.examplemod.DoNotTouch.ChristmasTree.ChristmasTreeBlock;
+import com.example.examplemod.DoNotTouch.ChristmasTree.ChristmasTreeRenderer;
+import com.example.examplemod.DoNotTouch.apolloboss.ApolloBossRenderer;
 import com.example.examplemod.DoNotTouch.Packets.ConfirmTeamPacket;
 import com.example.examplemod.DoNotTouch.Packets.OpenGuiPacket;
 import com.example.examplemod.DoNotTouch.Packets.SummonEntityPacket;
-import com.example.examplemod.DoNotTouch.TestItem.TestItem;
+import com.example.examplemod.DoNotTouch.apolloboss.ApolloBoss;
+import com.example.examplemod.DoNotTouch.apolloboss.ApolloChocolate;
+import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.common.BiomeDictionary;
@@ -27,6 +35,7 @@ import net.minecraftforge.network.simple.SimpleChannel;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import software.bernie.geckolib3.GeckoLib;
 
 @Mod(ExampleMod.MODID)
 public class ExampleMod {
@@ -37,10 +46,6 @@ public class ExampleMod {
     // Directly reference a log4j logger.
     private static final Logger LOGGER = LogManager.getLogger();
 
-
-    // Debug Item
-    public static final Item DEBUG_ITEM = new TestItem().setRegistryName(MODID, "debug_item");
-
     private static final String PROTOCOL_VERSION = "1.0";
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             new ResourceLocation(MODID, "main"),
@@ -50,10 +55,33 @@ public class ExampleMod {
     );
     private static int packetId = 0;
 
+    public static final EntityType<ChristmasTree> CHRISTMAS_TREE_ENTITY = EntityType.Builder.of(ChristmasTree::new, MobCategory.CREATURE)
+            .sized(0.9f, 1.4f)
+            .setTrackingRange(32)
+            .setShouldReceiveVelocityUpdates(true)
+            .build("christmas_tree_entity");
+
+    public static final Block CHRISTMAS_TREE_BLOCK = new ChristmasTreeBlock().setRegistryName(MODID, "christmas_tree_base");
+
+    public static final EntityType<ApolloBoss> APOLLO_BOSS=EntityType.Builder.of(ApolloBoss::new, MobCategory.CREATURE)
+            .sized(2F,5F)
+            .setTrackingRange(32)
+            .setShouldReceiveVelocityUpdates(true)
+            .build("apollo_boss");
+
+    public static final Item APOLLO_SPAWN_EGG=
+            new SpawnEggItem(APOLLO_BOSS,
+                    0xFF0000,
+                    0x00FF00,
+                    new Item.Properties().tab(CreativeModeTab.TAB_MISC)
+            ).setRegistryName(MODID,"apollo_spawn_egg");
+
+    public static final Item APOLLO_CHOCOLATE=new ApolloChocolate().setRegistryName(MODID,"apollo_chocolate");
+
     public ExampleMod() {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::doClientStuff);
-
+        GeckoLib.initialize();
         MinecraftForge.EVENT_BUS.register(this);
     }
 
@@ -66,18 +94,18 @@ public class ExampleMod {
     }
 
     private void doClientStuff(final FMLClientSetupEvent event) {
-
+        EntityRenderers.register(CHRISTMAS_TREE_ENTITY, ChristmasTreeRenderer::new);
+        EntityRenderers.register(APOLLO_BOSS, ApolloBossRenderer::new);
     }
 
     @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
     public static class RegistryEvents {
         private static final RegisterBlockData[] registerBlocks = {
                 // ここにBlockを書いてね！
-
+                new RegisterBlockData(CHRISTMAS_TREE_BLOCK)
         };
 
         private static final Item[] registerItems = {
-                DEBUG_ITEM
 
         };
 
@@ -88,12 +116,14 @@ public class ExampleMod {
 
         @SubscribeEvent
         public static void onAttributeCreation(final EntityAttributeCreationEvent event) {
-
+            event.put(CHRISTMAS_TREE_ENTITY, ChristmasTree.setAttributes());
+            event.put(APOLLO_BOSS,ApolloBoss.setAttributes());
         }
 
         @SubscribeEvent
         public static void onEntitiesRegistry(final RegistryEvent.Register<EntityType<?>> event) {
-
+            event.getRegistry().register(CHRISTMAS_TREE_ENTITY.setRegistryName(MODID, "christmas_tree_entity"));
+            event.getRegistry().register(APOLLO_BOSS.setRegistryName(MODID,"apollo_boss"));
         }
 
         // ======================================================================================================
@@ -123,6 +153,9 @@ public class ExampleMod {
             for (Item item : registerItems) {
                 event.getRegistry().register(item);
             }
+
+            event.getRegistry().register(APOLLO_CHOCOLATE);
+            event.getRegistry().register(APOLLO_SPAWN_EGG);
         }
 
         static class RegisterBlockData {

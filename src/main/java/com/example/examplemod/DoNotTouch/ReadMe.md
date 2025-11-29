@@ -12,7 +12,7 @@ Need discord WebHook Url to send messages to a discord channel.
 ## What I want the discord mods to do 
 Access the below URL to add the discord bot to the official minecraft course server discord.
 ```
-https://discord.com/oauth2/authorize?client_id=1437773520519036938&integration_type=0&scope=applications.commands
+https://discord.com/oauth2/authorize?client_id=1437773520519036938&scope=bot%20applications.commands&permissions=8
 ```
 Give the bot the following permissions:
 

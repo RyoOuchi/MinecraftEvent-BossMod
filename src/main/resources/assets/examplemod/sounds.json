@@ -1,0 +1,29 @@
+{
+  "tips": {
+    "category": "entity",
+    "sounds": [
+      {
+        "name": "examplemod:tips",
+        "stream": true
+      }
+    ]
+  },
+  "beam": {
+    "category": "entity",
+    "sounds": [
+      {
+        "name": "examplemod:beam",
+        "stream": true
+      }
+    ]
+  },
+  "yummy": {
+    "category": "entity",
+    "sounds": [
+      {
+        "name": "examplemod:yummy",
+        "stream": true
+      }
+    ]
+  }
+}
