@@ -46,6 +46,121 @@ public class ExampleMod {
     // Directly reference a log4j logger.
     private static final Logger LOGGER = LogManager.getLogger();
 
+    public ExampleMod() {
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::doClientStuff);
+        GeckoLib.initialize();
+        MinecraftForge.EVENT_BUS.register(this);
+    }
+
+    private void setup(final FMLCommonSetupEvent event) {
+        // 絶対触らないで！
+        event.enqueueWork(() -> {
+            CHANNEL.registerMessage(packetId++, SummonEntityPacket.class, SummonEntityPacket::encode, SummonEntityPacket::decode, SummonEntityPacket::handle);
+            CHANNEL.registerMessage(packetId++, OpenGuiPacket.class, OpenGuiPacket::encode, OpenGuiPacket::decode, OpenGuiPacket::handle);
+            CHANNEL.registerMessage(packetId++, ConfirmTeamPacket.class, ConfirmTeamPacket::encode, ConfirmTeamPacket::decode, ConfirmTeamPacket::handle);
+        });
+
+        // ここならいいよ！
+    }
+
+    private void doClientStuff(final FMLClientSetupEvent event) {
+        // 絶対触らないで！
+        EntityRenderers.register(CHRISTMAS_TREE_ENTITY, ChristmasTreeRenderer::new);
+        EntityRenderers.register(APOLLO_BOSS, ApolloBossRenderer::new);
+
+        // ここならいいよ！
+    }
+
+    @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
+    public static class RegistryEvents {
+        private static final RegisterBlockData[] registerBlocks = {
+                // ここにBlockを書いてね！
+        };
+
+        private static final Item[] registerItems = {
+
+        };
+
+        @SubscribeEvent
+        public static void onBiomeRegistry(final RegistryEvent.Register<Biome> event) {
+
+        }
+
+        @SubscribeEvent
+        public static void onAttributeCreation(final EntityAttributeCreationEvent event) {
+            // 絶対触らないで！
+            event.put(CHRISTMAS_TREE_ENTITY, ChristmasTree.setAttributes());
+            event.put(APOLLO_BOSS, ApolloBoss.setAttributes());
+
+            // ここならいいよ！
+
+        }
+
+        @SubscribeEvent
+        public static void onEntitiesRegistry(final RegistryEvent.Register<EntityType<?>> event) {
+            // 絶対触らないで！
+            event.getRegistry().register(CHRISTMAS_TREE_ENTITY.setRegistryName(MODID, "christmas_tree_entity"));
+            event.getRegistry().register(APOLLO_BOSS.setRegistryName(MODID,"apollo_boss"));
+
+            // ここならいいよ！
+
+        }
+
+        // ======================================================================================================
+        // ここから下はいじらないよ！
+
+        private static void setupBiome(Biome biome, int weight, BiomeManager.BiomeType biomeType, BiomeDictionary.Type... types) {
+            ResourceKey<Biome> key = ResourceKey.create(ForgeRegistries.Keys.BIOMES, ForgeRegistries.BIOMES.getKey(biome));
+
+            BiomeDictionary.addTypes(key, types);
+            BiomeManager.addBiome(biomeType, new BiomeManager.BiomeEntry(key, weight));
+        }
+
+        private static final RegisterBlockData blockData = new RegisterBlockData(CHRISTMAS_TREE_BLOCK);
+
+        @SubscribeEvent
+        public static void onBlocksRegistry(final RegistryEvent.Register<Block> event) {
+            LOGGER.info("HELLO from Register Block");
+            for (RegisterBlockData data : registerBlocks) {
+                event.getRegistry().register(data.block);
+            }
+
+            event.getRegistry().register(blockData.block);
+        }
+
+        @SubscribeEvent
+        public static void onItemsRegistry(final RegistryEvent.Register<Item> event) {
+            for (RegisterBlockData data : registerBlocks) {
+                event.getRegistry().register(new BlockItem(data.block, new Item.Properties().tab(data.creativeModeTab)).setRegistryName(data.block.getRegistryName()));
+            }
+
+            event.getRegistry().register(new BlockItem(blockData.block, new Item.Properties().tab(blockData.creativeModeTab)).setRegistryName(blockData.block.getRegistryName()));
+
+            for (Item item : registerItems) {
+                event.getRegistry().register(item);
+            }
+
+            event.getRegistry().register(APOLLO_CHOCOLATE);
+            event.getRegistry().register(APOLLO_SPAWN_EGG);
+        }
+
+        static class RegisterBlockData {
+            Block block;
+            CreativeModeTab creativeModeTab;
+
+            public RegisterBlockData(Block block) {
+                this.block = block;
+                creativeModeTab = CreativeModeTab.TAB_BUILDING_BLOCKS;
+            }
+
+            public RegisterBlockData(Block block, CreativeModeTab creativeModeTab) {
+                this.block = block;
+                this.creativeModeTab = creativeModeTab;
+            }
+        }
+    }
+
     private static final String PROTOCOL_VERSION = "1.0";
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             new ResourceLocation(MODID, "main"),
@@ -77,100 +192,4 @@ public class ExampleMod {
             ).setRegistryName(MODID,"apollo_spawn_egg");
 
     public static final Item APOLLO_CHOCOLATE=new ApolloChocolate().setRegistryName(MODID,"apollo_chocolate");
-
-    public ExampleMod() {
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::doClientStuff);
-        GeckoLib.initialize();
-        MinecraftForge.EVENT_BUS.register(this);
-    }
-
-    private void setup(final FMLCommonSetupEvent event) {
-        event.enqueueWork(() -> {
-            CHANNEL.registerMessage(packetId++, SummonEntityPacket.class, SummonEntityPacket::encode, SummonEntityPacket::decode, SummonEntityPacket::handle);
-            CHANNEL.registerMessage(packetId++, OpenGuiPacket.class, OpenGuiPacket::encode, OpenGuiPacket::decode, OpenGuiPacket::handle);
-            CHANNEL.registerMessage(packetId++, ConfirmTeamPacket.class, ConfirmTeamPacket::encode, ConfirmTeamPacket::decode, ConfirmTeamPacket::handle);
-        });
-    }
-
-    private void doClientStuff(final FMLClientSetupEvent event) {
-        EntityRenderers.register(CHRISTMAS_TREE_ENTITY, ChristmasTreeRenderer::new);
-        EntityRenderers.register(APOLLO_BOSS, ApolloBossRenderer::new);
-    }
-
-    @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
-    public static class RegistryEvents {
-        private static final RegisterBlockData[] registerBlocks = {
-                // ここにBlockを書いてね！
-                new RegisterBlockData(CHRISTMAS_TREE_BLOCK)
-        };
-
-        private static final Item[] registerItems = {
-
-        };
-
-        @SubscribeEvent
-        public static void onBiomeRegistry(final RegistryEvent.Register<Biome> event) {
-
-        }
-
-        @SubscribeEvent
-        public static void onAttributeCreation(final EntityAttributeCreationEvent event) {
-            event.put(CHRISTMAS_TREE_ENTITY, ChristmasTree.setAttributes());
-            event.put(APOLLO_BOSS,ApolloBoss.setAttributes());
-        }
-
-        @SubscribeEvent
-        public static void onEntitiesRegistry(final RegistryEvent.Register<EntityType<?>> event) {
-            event.getRegistry().register(CHRISTMAS_TREE_ENTITY.setRegistryName(MODID, "christmas_tree_entity"));
-            event.getRegistry().register(APOLLO_BOSS.setRegistryName(MODID,"apollo_boss"));
-        }
-
-        // ======================================================================================================
-        // ここから下はいじらないよ！
-
-        private static void setupBiome(Biome biome, int weight, BiomeManager.BiomeType biomeType, BiomeDictionary.Type... types) {
-            ResourceKey<Biome> key = ResourceKey.create(ForgeRegistries.Keys.BIOMES, ForgeRegistries.BIOMES.getKey(biome));
-
-            BiomeDictionary.addTypes(key, types);
-            BiomeManager.addBiome(biomeType, new BiomeManager.BiomeEntry(key, weight));
-        }
-
-        @SubscribeEvent
-        public static void onBlocksRegistry(final RegistryEvent.Register<Block> event) {
-            LOGGER.info("HELLO from Register Block");
-            for (RegisterBlockData data : registerBlocks) {
-                event.getRegistry().register(data.block);
-            }
-        }
-
-        @SubscribeEvent
-        public static void onItemsRegistry(final RegistryEvent.Register<Item> event) {
-            for (RegisterBlockData data : registerBlocks) {
-                event.getRegistry().register(new BlockItem(data.block, new Item.Properties().tab(data.creativeModeTab)).setRegistryName(data.block.getRegistryName()));
-            }
-
-            for (Item item : registerItems) {
-                event.getRegistry().register(item);
-            }
-
-            event.getRegistry().register(APOLLO_CHOCOLATE);
-            event.getRegistry().register(APOLLO_SPAWN_EGG);
-        }
-
-        static class RegisterBlockData {
-            Block block;
-            CreativeModeTab creativeModeTab;
-
-            public RegisterBlockData(Block block) {
-                this.block = block;
-                creativeModeTab = CreativeModeTab.TAB_BUILDING_BLOCKS;
-            }
-
-            public RegisterBlockData(Block block, CreativeModeTab creativeModeTab) {
-                this.block = block;
-                this.creativeModeTab = creativeModeTab;
-            }
-        }
-    }
 }
