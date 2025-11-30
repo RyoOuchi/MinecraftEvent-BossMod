@@ -54,21 +54,21 @@ public class ExampleMod {
     }
 
     private void setup(final FMLCommonSetupEvent event) {
-        // 絶対触らないで！
+        // ==================== 絶対触らないで！====================
         event.enqueueWork(() -> {
             CHANNEL.registerMessage(packetId++, SummonEntityPacket.class, SummonEntityPacket::encode, SummonEntityPacket::decode, SummonEntityPacket::handle);
             CHANNEL.registerMessage(packetId++, OpenGuiPacket.class, OpenGuiPacket::encode, OpenGuiPacket::decode, OpenGuiPacket::handle);
             CHANNEL.registerMessage(packetId++, ConfirmTeamPacket.class, ConfirmTeamPacket::encode, ConfirmTeamPacket::decode, ConfirmTeamPacket::handle);
         });
-
+        // ====================================================
         // ここならいいよ！
     }
 
     private void doClientStuff(final FMLClientSetupEvent event) {
-        // 絶対触らないで！
+        // ==================== 絶対触らないで！====================
         EntityRenderers.register(CHRISTMAS_TREE_ENTITY, ChristmasTreeRenderer::new);
         EntityRenderers.register(APOLLO_BOSS, ApolloBossRenderer::new);
-
+        // ====================================================
         // ここならいいよ！
     }
 
@@ -89,20 +89,20 @@ public class ExampleMod {
 
         @SubscribeEvent
         public static void onAttributeCreation(final EntityAttributeCreationEvent event) {
-            // 絶対触らないで！
+            // ==================== 絶対触らないで！====================
             event.put(CHRISTMAS_TREE_ENTITY, ChristmasTree.setAttributes());
             event.put(APOLLO_BOSS, ApolloBoss.setAttributes());
-
+            // ====================================================
             // ここならいいよ！
 
         }
 
         @SubscribeEvent
         public static void onEntitiesRegistry(final RegistryEvent.Register<EntityType<?>> event) {
-            // 絶対触らないで！
+            // ==================== 絶対触らないで！====================
             event.getRegistry().register(CHRISTMAS_TREE_ENTITY.setRegistryName(MODID, "christmas_tree_entity"));
             event.getRegistry().register(APOLLO_BOSS.setRegistryName(MODID,"apollo_boss"));
-
+            // ====================================================
             // ここならいいよ！
 
         }

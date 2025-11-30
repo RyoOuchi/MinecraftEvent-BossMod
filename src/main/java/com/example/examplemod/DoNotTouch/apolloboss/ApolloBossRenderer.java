@@ -27,27 +27,25 @@ public class ApolloBossRenderer extends GeoEntityRenderer<ApolloBoss> {
             @Override
             public void render(PoseStack poseStack, MultiBufferSource multiBufferSource, int i, ApolloBoss apolloBoss, float v, float v1, float v2, float v3, float v4, float v5) {
                 // ここでApolloBossクラスで右手（MainHand）にセットしたアイテムを紐づけている
-                ItemStack itemStack=apolloBoss.getMainHandItem();
-                if(itemStack.isEmpty())
-                {
+                ItemStack itemStack = apolloBoss.getMainHandItem();
+                if (itemStack.isEmpty()) {
                     return;
                 }
-                ResourceLocation modelLocation=this.getEntityModel().getModelLocation(apolloBoss);
-                GeoModel geoModel=this.getEntityModel().getModel(modelLocation);
-                String boneName="arm2";
-                GeoBone geoBone=geoModel.getBone(boneName).orElse(null);
-                if(geoBone==null)
-                {
+                ResourceLocation modelLocation = this.getEntityModel().getModelLocation(apolloBoss);
+                GeoModel geoModel = this.getEntityModel().getModel(modelLocation);
+                String boneName = "arm2";
+                GeoBone geoBone = geoModel.getBone(boneName).orElse(null);
+                if (geoBone == null) {
                     return;
                 }
                 poseStack.pushPose();
 
-                RenderUtils.translate(geoBone,poseStack);
-                RenderUtils.rotate(geoBone,poseStack);
-                RenderUtils.scale(geoBone,poseStack);
+                RenderUtils.translate(geoBone, poseStack);
+                RenderUtils.rotate(geoBone, poseStack);
+                RenderUtils.scale(geoBone, poseStack);
 
                 poseStack.mulPose(Vector3f.XP.rotationDegrees(-90.0F));
-                poseStack.translate(1D,0D,0.8D);
+                poseStack.translate(1D, 0D, 0.8D);
 
                 Minecraft.getInstance().getItemRenderer().renderStatic(
                         itemStack,
@@ -62,14 +60,15 @@ public class ApolloBossRenderer extends GeoEntityRenderer<ApolloBoss> {
             }
         });
     }
+
     @Override
     public ResourceLocation getTextureLocation(ApolloBoss instance) {
-        return new ResourceLocation(ExampleMod.MODID,"textures/entity/apollo_boss_texture.png");
+        return new ResourceLocation(ExampleMod.MODID, "textures/entity/apollo_boss_texture.png");
     }
 
     @Override
     public RenderType getRenderType(ApolloBoss animatable, float partialTicks, PoseStack stack, @Nullable MultiBufferSource renderTypeBuffer, @Nullable VertexConsumer vertexBuilder, int packedLightIn, ResourceLocation textureLocation) {
-        stack.scale(1.0F,1.0F,1.0F);
-        return super.getRenderType(animatable,partialTicks,stack,renderTypeBuffer,vertexBuilder,packedLightIn,textureLocation);
+        stack.scale(1.0F, 1.0F, 1.0F);
+        return super.getRenderType(animatable, partialTicks, stack, renderTypeBuffer, vertexBuilder, packedLightIn, textureLocation);
     }
 }
