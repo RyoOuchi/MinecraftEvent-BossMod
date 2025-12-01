@@ -115,6 +115,29 @@ public class NetworkUtils {
         }
     }
 
+    public static void informDiscordOfKilledByBoss(String teamID) {
+        final String message = "チーム " + teamID + "が Tips を書かなかったため、アポロに倒されました…";
+        try {
+            URL url = new URL(ImportantConstants.DISCORD_WEBHOOK_URL);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+            conn.setDoOutput(true);
+
+            String payload = "{\"content\": \"" + message + "\"}";
+
+            try (OutputStream os = conn.getOutputStream()) {
+                os.write(payload.getBytes(StandardCharsets.UTF_8));
+            }
+
+            int responseCode = conn.getResponseCode();
+            System.out.println("Discord Webhook Response (Killed By Boss): " + responseCode);
+            conn.disconnect();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public static void informBackendStartedBossFight(final int bossId, final Level level) {
         if (!(level instanceof ServerLevel serverLevel)) return;
         final String teamID = TeamSavedData.get(serverLevel).getTeamId();

@@ -2,6 +2,7 @@ package com.example.examplemod.DoNotTouch.ChristmasTree;
 
 import com.example.examplemod.ExampleMod;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -20,5 +21,15 @@ public class ChristmasTreeBlock extends Block {
             pLevel.addFreshEntity(christmasTree);
         }
         super.onPlace(pState, pLevel, pPos, pOldState, pIsMoving);
+    }
+
+    @Override
+    public void onRemove(BlockState pState, Level pLevel, BlockPos pPos, BlockState pNewState, boolean pIsMoving) {
+        if (!pLevel.isClientSide) {
+            // ブロックが破壊されたときに対応するChristmasTreeエンティティを削除
+            pLevel.getEntitiesOfClass(ChristmasTree.class, pState.getShape(pLevel, pPos).bounds().move(pPos.getX(), pPos.getY(), pPos.getZ()))
+                    .forEach(entity -> entity.remove(Entity.RemovalReason.DISCARDED));
+        }
+        super.onRemove(pState, pLevel, pPos, pNewState, pIsMoving);
     }
 }

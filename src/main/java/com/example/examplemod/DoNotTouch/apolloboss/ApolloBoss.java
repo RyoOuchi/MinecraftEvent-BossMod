@@ -2,6 +2,7 @@ package com.example.examplemod.DoNotTouch.apolloboss;
 
 import com.example.examplemod.ExampleMod;
 import com.mojang.math.Vector3f;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
@@ -109,7 +110,7 @@ public class ApolloBoss extends Monster implements IAnimatable {
 
     public static AttributeSupplier setAttributes() {
         return Animal.createMobAttributes()
-                .add(Attributes.MAX_HEALTH, 2000.0D)
+                .add(Attributes.MAX_HEALTH, 20.0D)
                 .add(Attributes.ATTACK_DAMAGE, 10.0F)
                 .add(Attributes.ATTACK_SPEED, 6.0F)
                 .add(Attributes.MOVEMENT_SPEED, 0.25F).build();
@@ -118,23 +119,23 @@ public class ApolloBoss extends Monster implements IAnimatable {
     protected void registerGoals() {
         this.goalSelector.addGoal(1, new FloatGoal(this));
         this.goalSelector.addGoal(2, new PanicGoal(this, 1.25D));
-        //this.goalSelector.addGoal(3,new ApolloAttackGoal(this,1.0D,true));
-        this.goalSelector.addGoal(4, new ApolloBeamGoal(this, 20, 20, 100));
-        this.goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, 1.0D));
-        this.goalSelector.addGoal(6, new RandomLookAroundGoal(this));
-        this.targetSelector.addGoal(7, (new HurtByTargetGoal(this)).setAlertOthers());
-        this.targetSelector.addGoal(8, new NearestAttackableTargetGoal<>(this, Player.class, true));
+        this.goalSelector.addGoal(3, new ApolloBeamGoal(this, 20, 20, 100));
+        this.goalSelector.addGoal(4,new ApolloAttackGoal(this,1.0D,true));
+        this.goalSelector.addGoal(5, new ApolloHealGoal(this));
+        this.goalSelector.addGoal(6, new WaterAvoidingRandomStrollGoal(this, 1.0D));
+        this.goalSelector.addGoal(7, new RandomLookAroundGoal(this));
+        this.targetSelector.addGoal(8, (new HurtByTargetGoal(this)).setAlertOthers());
+        this.targetSelector.addGoal(9, new NearestAttackableTargetGoal<>(this, Player.class, true));
     }
 
-    @Override
-    public boolean hurt(@NotNull DamageSource source, float amount) {
-        // すでに回復中や攻撃中でなければ、30%の確率で回復行動をとる
-        if (!this.level.isClientSide && !isHealing() && !isAttacking()) {
-            startHealing();
-            System.out.println("アポロがアポロを食べる");
-        }
-        return super.hurt(source, amount);
-    }
+//    @Override
+//    public boolean hurt(@NotNull DamageSource source, float amount) {
+//        // すでに回復中や攻撃中でなければ、30%の確率で回復行動をとる
+//        if (!this.level.isClientSide && !isHealing() && !isAttacking()) {
+//            startHealing();
+//        }
+//        return super.hurt(source, amount);
+//    }
 
     @Override
     public boolean doHurtTarget(@NotNull Entity target) {
@@ -158,7 +159,7 @@ public class ApolloBoss extends Monster implements IAnimatable {
         return success;
     }
 
-    private void startHealing() {
+    void startHealing() {
         this.setHealing(true);
         this.healTimer = 40; // 40tick（2秒間）のモーション
         this.level.playSound(null, this.blockPosition(), yummy, SoundSource.HOSTILE, 1.0f, 1.0f);
@@ -340,5 +341,13 @@ public class ApolloBoss extends Monster implements IAnimatable {
     @Override
     public Component getDisplayName() {
         return new TextComponent("激おこアポロ");
+    }
+
+    @Override
+    public void die(DamageSource pCause) {
+        BlockPos posOnDeath = this.blockPosition();
+        Level level = this.level;
+        level.setBlockAndUpdate(posOnDeath, ExampleMod.CHRISTMAS_TREE_BLOCK.defaultBlockState());
+        super.die(pCause);
     }
 }

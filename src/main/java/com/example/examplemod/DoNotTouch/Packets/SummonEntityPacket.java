@@ -8,6 +8,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.network.NetworkEvent;
 
 import java.lang.reflect.Type;
@@ -50,7 +51,11 @@ public class SummonEntityPacket {
                 final Level level = player.level;
                 var entity = ImportantConstants.BOSS_ENTITY_TYPE.create(level);
                 if (entity != null) {
-                    entity.setPos(player.getX(), player.getY(), player.getZ());
+                    Vec3 eyePos = player.getEyePosition();
+                    Vec3 look = player.getLookAngle();
+                    double distance = 25.0;
+                    Vec3 spawnPos = eyePos.add(look.scale(distance));
+                    entity.setPos(spawnPos.x, player.getY() + 10, spawnPos.z);
                     level.addFreshEntity(entity);
                     System.out.println("[SummonEntityPacket] Boss spawned for " + player.getName().getString() + ", With ID of: " + entity.getId());
                 }
