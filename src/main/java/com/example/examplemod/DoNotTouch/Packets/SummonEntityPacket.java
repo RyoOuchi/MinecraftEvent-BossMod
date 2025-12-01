@@ -4,10 +4,15 @@ import com.example.examplemod.DoNotTouch.ImportantConstants;
 import com.example.examplemod.DoNotTouch.ServerData.TeamSavedData;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.network.NetworkEvent;
 
@@ -51,16 +56,83 @@ public class SummonEntityPacket {
                 final Level level = player.level;
                 var entity = ImportantConstants.BOSS_ENTITY_TYPE.create(level);
                 if (entity != null) {
+
                     Vec3 eyePos = player.getEyePosition();
                     Vec3 look = player.getLookAngle();
-                    double distance = 25.0;
+                    double distance = 10.0;
+
                     Vec3 spawnPos = eyePos.add(look.scale(distance));
-                    entity.setPos(spawnPos.x, player.getY() + 10, spawnPos.z);
+                    double x = spawnPos.x;
+                    double z = spawnPos.z;
+                    int startY = (int) (player.getY() + 30);
+
+                    int surfaceY = findSurfaceY(level, x, z, startY);
+                    clearAboveSurface(level, x, z, surfaceY, startY);
+
+                    entity.setPos(x, startY + 1, z);
                     level.addFreshEntity(entity);
-                    System.out.println("[SummonEntityPacket] Boss spawned for " + player.getName().getString() + ", With ID of: " + entity.getId());
+
+                    System.out.println("[SummonEntityPacket] Boss spawned on surface at Y=" + (surfaceY + 1));
                 }
             }
         });
         context.get().setPacketHandled(true);
     }
+
+    private static int findSurfaceY(Level level, double x, double z, int startY) {
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos(x, startY, z);
+
+        while (pos.getY() > level.getMinBuildHeight()) {
+
+            BlockState current = level.getBlockState(pos);
+            BlockState above = level.getBlockState(pos.above());
+
+            boolean isSurface = above.isAir() && isSurfaceBlock(current);
+
+            if (isSurface) {
+                return pos.getY();
+            }
+
+            pos.move(0, -1, 0);
+        }
+
+        return level.getMinBuildHeight();
+    }
+
+    private static void clearAboveSurface(Level level, double x, double z, int surfaceY, int startY) {
+
+        int bx = Mth.floor(x);
+        int bz = Mth.floor(z);
+
+        for (int y = surfaceY + 1; y <= startY; y++) {
+            for (int dx = -2; dx <= 2; dx++) {
+                for (int dz = -2; dz <= 2; dz++) {
+                    BlockPos bp = new BlockPos(bx + dx, y, bz + dz);
+                    BlockState blockState = level.getBlockState(bp);
+                    if (isSurfaceBlock(blockState)) continue;
+                    level.removeBlock(bp, false);
+                }
+            }
+        }
+    }
+
+    private static boolean isSurfaceBlock(BlockState state) {
+        Block block = state.getBlock();
+
+        return block == Blocks.GRASS_BLOCK ||
+                block == Blocks.DIRT ||
+                block == Blocks.COARSE_DIRT ||
+                block == Blocks.PODZOL ||
+                block == Blocks.MYCELIUM ||
+                block == Blocks.SAND ||
+                block == Blocks.RED_SAND ||
+                block == Blocks.GRAVEL ||
+                block == Blocks.SNOW_BLOCK ||
+                block == Blocks.STONE ||
+                block == Blocks.DEEPSLATE ||
+                block == Blocks.ANDESITE ||
+                block == Blocks.DIORITE ||
+                block == Blocks.GRANITE;
+    }
+
 }
