@@ -2,10 +2,14 @@ package com.example.examplemod.DoNotTouch.Packets;
 
 import com.example.examplemod.DoNotTouch.ImportantConstants;
 import com.example.examplemod.DoNotTouch.ServerData.TeamSavedData;
+import com.example.examplemod.DoNotTouch.TickScheduler.Scheduler;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.mojang.math.Vector3f;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.TickTask;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
@@ -72,7 +76,18 @@ public class SummonEntityPacket {
                     entity.setPos(x, startY + 1, z);
                     level.addFreshEntity(entity);
 
-                    System.out.println("[SummonEntityPacket] Boss spawned on surface at Y=" + (surfaceY + 1));
+                    for (int t = 0; t < 20 * 2; t += 10) {
+                        Scheduler.schedule(t, () -> {
+                            spawnRedParticleRing(serverLevel, x, surfaceY + 1.0, z, 3.0);
+                            spawnRedParticleRing(serverLevel, x, surfaceY + 1.0, z, 5.0);
+                            spawnRedParticleRing(serverLevel, x, surfaceY + 1.0, z, 7.0);
+
+                            for (int i = 1; i < 40; i += 2) {
+                                spawnRedParticleRing(serverLevel, x, surfaceY + 1.0 + i, z, 3.0);
+                            }
+                        });
+                    }
+
                 }
             }
         });
@@ -133,6 +148,24 @@ public class SummonEntityPacket {
                 block == Blocks.ANDESITE ||
                 block == Blocks.DIORITE ||
                 block == Blocks.GRANITE;
+    }
+
+    private static void spawnRedParticleRing(ServerLevel level, double cx, double y, double cz, double radius) {
+
+        for (int angle = 0; angle < 360; angle += 4) {
+            double rad = Math.toRadians(angle);
+
+            double x = cx + Math.cos(rad) * radius;
+            double z = cz + Math.sin(rad) * radius;
+
+            level.sendParticles(
+                    new DustParticleOptions(new Vector3f(1.0F, 0.0F, 0.0F), 1.0F),
+                    x, y, z,
+                    3,
+                    0, 0, 0,
+                    0.0D
+            );
+        }
     }
 
 }
