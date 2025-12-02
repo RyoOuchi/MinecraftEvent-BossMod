@@ -41,7 +41,35 @@ public class ApolloTeleportGoal extends Goal {
         super.start();
     }
 
-    private static void teleportBoss(Level level, LivingEntity livingEntity, ApolloBoss boss) {
+    public static void teleportBossToTarget(Level level, LivingEntity livingEntity, ApolloBoss boss) {
+        if (level.isClientSide) return;
+        if (!(livingEntity instanceof Player player)) return;
+        final ServerLevel serverLevel = (ServerLevel) level;
+            int startY = (int) (player.getY() + 30);
+
+            double x = player.getX();
+            double z = player.getZ();
+
+            int surfaceY = findSurfaceY(level, x, z, startY);
+            clearAboveSurface(level, x, z, surfaceY, startY);
+
+            boss.teleportTo(x, startY + 1, z);
+
+            for (int t = 0; t < 20 * 2; t += 10) {
+                Scheduler.schedule(t, () -> {
+                    spawnRedParticleRing(serverLevel, x, surfaceY + 1.0, z, 3.0);
+                    spawnRedParticleRing(serverLevel, x, surfaceY + 1.0, z, 5.0);
+                    spawnRedParticleRing(serverLevel, x, surfaceY + 1.0, z, 7.0);
+
+                    for (int i = 1; i < 40; i += 2) {
+                        spawnRedParticleRing(serverLevel, x, surfaceY + 1.0 + i, z, 3.0);
+                    }
+                });
+
+        }
+    }
+
+    public static void teleportBoss(Level level, LivingEntity livingEntity, ApolloBoss boss) {
         if (level.isClientSide) return;
         if (!(livingEntity instanceof Player player)) return;
         final ServerLevel serverLevel = (ServerLevel) level;

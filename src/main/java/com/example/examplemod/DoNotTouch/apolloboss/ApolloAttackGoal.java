@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 public class ApolloAttackGoal extends MeleeAttackGoal {
     // ApolloBossクラスのメソッド（setAttackingなど）を使いたいので保持しておく
     private final ApolloBoss apolloBoss;
-    private static final double ATTACK_RANGE = 25;
+    private static final double ATTACK_RANGE = 4.5;
 
     public ApolloAttackGoal(ApolloBoss apolloBoss, double speedModifier, boolean followingTarget) {
         super(apolloBoss, speedModifier, followingTarget);
@@ -32,6 +32,6 @@ public class ApolloAttackGoal extends MeleeAttackGoal {
 
     @Override
     protected double getAttackReachSqr(LivingEntity enemy) {
-        return ATTACK_RANGE;
+        return ATTACK_RANGE * ATTACK_RANGE;
     }
 }

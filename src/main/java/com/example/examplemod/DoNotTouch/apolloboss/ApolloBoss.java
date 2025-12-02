@@ -4,6 +4,7 @@ import com.example.examplemod.ExampleMod;
 import com.mojang.math.Vector3f;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.DustParticleOptions;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -14,6 +15,7 @@ import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.BossEvent;
 import net.minecraft.world.InteractionHand;
@@ -69,6 +71,10 @@ public class ApolloBoss extends Monster implements IAnimatable {
     // ビームのクールダウン時間を管理する変数
     private int beamCooldown = 0;
 
+    private int projectileHits = 0;
+    private final int maxProjectileHits = 5;
+    private int projectileCooldown = 0;
+
     public ApolloBoss(EntityType<? extends Monster> entityType, Level level) {
         super(entityType, level);
         this.maxUpStep = 1.0F;
@@ -120,13 +126,13 @@ public class ApolloBoss extends Monster implements IAnimatable {
 
     protected void registerGoals() {
         this.goalSelector.addGoal(1, new FloatGoal(this));
-        this.goalSelector.addGoal(2, new PanicGoal(this, 1.25D));
-        this.goalSelector.addGoal(3, new ApolloBeamGoal(this, 20, 20, 100));
-        this.goalSelector.addGoal(4,new ApolloAttackGoal(this,1.0D,true));
-        this.goalSelector.addGoal(5, new ApolloHealGoal(this));
-        this.goalSelector.addGoal(6, new ApolloTeleportGoal(this));
-        this.goalSelector.addGoal(7, new WaterAvoidingRandomStrollGoal(this, 1.0D));
-        this.goalSelector.addGoal(8, new RandomLookAroundGoal(this));
+//        this.goalSelector.addGoal(2, new PanicGoal(this, 1.25D));
+        this.goalSelector.addGoal(2, new ApolloBeamGoal(this, 20, 20, 100));
+        this.goalSelector.addGoal(3, new ApolloAttackGoal(this, 1.0D, true));
+        this.goalSelector.addGoal(4, new ApolloHealGoal(this));
+        this.goalSelector.addGoal(5, new ApolloTeleportGoal(this));
+        this.goalSelector.addGoal(6, new WaterAvoidingRandomStrollGoal(this, 1.0D));
+        this.goalSelector.addGoal(7, new RandomLookAroundGoal(this));
         this.targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(this, Player.class, true));
         this.targetSelector.addGoal(2, (new HurtByTargetGoal(this)).setAlertOthers());
     }
@@ -167,7 +173,103 @@ public class ApolloBoss extends Monster implements IAnimatable {
         this.healTimer = 40; // 40tick（2秒間）のモーション
         this.level.playSound(null, this.blockPosition(), yummy, SoundSource.HOSTILE, 1.0f, 1.0f);
         this.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ExampleMod.APOLLO_CHOCOLATE));
+
         System.out.println("Main hand: " + this.getMainHandItem());
+    }
+
+    @Override
+    public boolean hurt(DamageSource pSource, float pAmount) {
+
+        // ==== PROJECTILE HITS ====
+        if (pSource.isProjectile()) {
+
+            if (projectileCooldown > 0) {
+                return false;
+            }
+
+            projectileHits++;
+            if (projectileHits >= maxProjectileHits) {
+                projectileHits = 0;
+                projectileCooldown = 20 * 5; // クールダウン100tick
+                if (pSource.getEntity() instanceof LivingEntity livingEntity) {
+                    ApolloTeleportGoal.teleportBossToTarget(getLevel(), livingEntity, this);
+                } else {
+                    ApolloTeleportGoal.teleportBossToTarget(getLevel(), this.getTarget(), this);
+                }
+            }
+            return super.hurt(pSource, pAmount);
+        }
+
+        // ==== FALL DAMAGE → 地震攻撃に変換 ====
+        if (pSource == DamageSource.FALL) {
+
+            LivingEntity target = this.getTarget();
+
+            if (target != null && target.distanceToSqr(this) < 49.0D) {
+
+                // 1. 地面揺れるパーティクル
+                spawnGroundRumbleParticles();
+
+                // 2. 地震ダメージをターゲットに
+                target.hurt(DamageSource.mobAttack(this), 10.0F);
+
+                // 3. ノックバックも追加（おすすめ）
+                target.knockback(0.8F,
+                        target.getX() - this.getX(),
+                        target.getZ() - this.getZ()
+                );
+
+                return false; // ボス自身の落下ダメージは無効化
+            }
+            return false; // ターゲットいなくても落下ダメージゼロ
+        }
+
+        return super.hurt(pSource, pAmount);
+    }
+
+    public void spawnGroundRumbleParticles() {
+        if (!(this.level instanceof ServerLevel server)) return;
+
+        BlockPos pos = this.blockPosition();
+        double x = pos.getX() + 0.5;
+        double y = pos.getY();
+        double z = pos.getZ() + 0.5;
+
+        // 1. 土煙（塵のパーティクル）
+        for (int i = 0; i < 40; i++) {
+            double dx = (this.random.nextDouble() - 0.5) * 1.5;
+            double dz = (this.random.nextDouble() - 0.5) * 1.5;
+
+            server.sendParticles(
+                    ParticleTypes.POOF,
+                    x + dx, y + 0.1, z + dz,
+                    1, 0, 0.05, 0, 0
+            );
+        }
+
+        // 2. 衝撃波（円状のパーティクル）
+        for (int i = 0; i < 32; i++) {
+            double angle = (Math.PI * 2 * i) / 32;
+            double radius = 1.5;
+
+            server.sendParticles(
+                    ParticleTypes.CRIT,
+                    x + Math.cos(angle) * radius,
+                    y + 0.2,
+                    z + Math.sin(angle) * radius,
+                    1, 0, 0, 0, 0
+            );
+        }
+
+        // 3. 低く重い地響き音（おすすめ）
+        this.level.playSound(
+                null,
+                this.blockPosition(),
+                SoundEvents.GOAT_RAM_IMPACT,   // 地響きに合う音
+                SoundSource.HOSTILE,
+                2.0f,
+                0.6f
+        );
     }
 
     public void startAttacking() {
@@ -183,10 +285,21 @@ public class ApolloBoss extends Monster implements IAnimatable {
         this.beamCooldown = ticks;
     }
 
+    @Override
+    public void tick() {
+        if (this.getTarget() != null && !this.getTarget().isAlive()) {
+            this.setHealth(this.getMaxHealth() * 0.7f);
+        }
+        super.tick();
+    }
+
     // 毎tick実行されるメソッドでタイマーを減らす
     @Override
     public void aiStep() {
         super.aiStep();
+        if (projectileCooldown > 0) {
+            projectileCooldown--;
+        }
         this.bossEvent.setProgress(this.getHealth() / this.getMaxHealth());
         if (!this.level.isClientSide) {
             //System.out.println("cooldown:"+this.beamCooldown);
@@ -203,7 +316,7 @@ public class ApolloBoss extends Monster implements IAnimatable {
                     // てのアイテムを消す、または空にする
                     this.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
                     // 実際に回復させる（HP+5）
-                    this.heal(5.0F);
+                    this.heal(20.0F);
                 }
             }
             // 攻撃の処理（テスト用）
@@ -336,7 +449,7 @@ public class ApolloBoss extends Monster implements IAnimatable {
 
         Vec3 perp2 = beamDir.cross(perp).normalize();
 
-        int helixPoints = (int)(distance * 4);
+        int helixPoints = (int) (distance * 4);
 
         for (int i = 0; i < helixPoints; i++) {
             double t = (double) i / helixPoints;
@@ -384,4 +497,10 @@ public class ApolloBoss extends Monster implements IAnimatable {
         level.setBlockAndUpdate(posOnDeath, ExampleMod.CHRISTMAS_TREE_BLOCK.defaultBlockState());
         super.die(pCause);
     }
+
+    @Override
+    public void kill() {
+
+    }
+
 }
