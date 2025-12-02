@@ -190,12 +190,8 @@ public class ApolloBoss extends Monster implements IAnimatable {
             projectileHits++;
             if (projectileHits >= maxProjectileHits) {
                 projectileHits = 0;
-                projectileCooldown = 20 * 5; // クールダウン100tick
-                if (pSource.getEntity() instanceof LivingEntity livingEntity) {
-                    ApolloTeleportGoal.teleportBossToTarget(getLevel(), livingEntity, this);
-                } else {
-                    ApolloTeleportGoal.teleportBossToTarget(getLevel(), this.getTarget(), this);
-                }
+                projectileCooldown = 20 * 5;
+                ApolloTeleportGoal.teleportBossToTarget(getLevel(), this.getTarget(), this);
             }
             return super.hurt(pSource, pAmount);
         }
