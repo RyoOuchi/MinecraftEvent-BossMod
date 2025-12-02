@@ -22,15 +22,20 @@ public class BossDeathHandler {
         final Level level = entity.level;
         if (level.isClientSide) return;
         if (!entity.getType().equals(ImportantConstants.BOSS_ENTITY_TYPE)) return;
+
         System.out.println("[BossDeathHandler] Boss has died!");
+
         final LivingEntity boss = (LivingEntity) entity;
         BossIDSavedData bossIDSavedData = BossIDSavedData.get((ServerLevel) level);
-        bossIDSavedData.getBossIds().forEach((integer) -> {
-            if (integer.equals(boss.getId())) {
-                bossIDSavedData.removeBossId(integer);
+
+        List<Integer> copy = List.copyOf(bossIDSavedData.getBossIds());
+
+        for (Integer id : copy) {
+            if (id.equals(boss.getId())) {
+                bossIDSavedData.removeBossId(id);
                 NetworkUtils.informBackendDefeatedBoss(boss.getId(), level);
                 System.out.println("[BossDeathHandler] Informed backend of boss defeat and removed boss ID from saved data.");
             }
-        });
+        }
     }
 }
