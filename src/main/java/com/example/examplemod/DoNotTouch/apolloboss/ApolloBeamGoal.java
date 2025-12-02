@@ -37,7 +37,11 @@ public class ApolloBeamGoal extends Goal {
             return false;
         }
         // クールダウン中でなければ使用可能
-        return this.apolloBoss.isBeamReady() && this.apolloBoss.distanceToSqr(target) < 400.0D;
+        float maxDistance = 60.0f;
+        float minDistance = 10.0f;
+        return this.apolloBoss.isBeamReady() &&
+                this.apolloBoss.distanceToSqr(target) < maxDistance * maxDistance &&
+                this.apolloBoss.distanceToSqr(target) > minDistance * minDistance;
     }
 
     // ゴールが実行可能だが、継続すべきかの判定

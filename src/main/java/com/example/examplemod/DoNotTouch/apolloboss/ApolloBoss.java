@@ -110,10 +110,12 @@ public class ApolloBoss extends Monster implements IAnimatable {
 
     public static AttributeSupplier setAttributes() {
         return Animal.createMobAttributes()
-                .add(Attributes.MAX_HEALTH, 20.0D)
+                .add(Attributes.MAX_HEALTH, 2000.0D)
                 .add(Attributes.ATTACK_DAMAGE, 10.0F)
                 .add(Attributes.ATTACK_SPEED, 6.0F)
-                .add(Attributes.MOVEMENT_SPEED, 0.25F).build();
+                .add(Attributes.MOVEMENT_SPEED, 0.25F)
+                .add(Attributes.FOLLOW_RANGE, 120.0D)
+                .build();
     }
 
     protected void registerGoals() {
@@ -122,10 +124,11 @@ public class ApolloBoss extends Monster implements IAnimatable {
         this.goalSelector.addGoal(3, new ApolloBeamGoal(this, 20, 20, 100));
         this.goalSelector.addGoal(4,new ApolloAttackGoal(this,1.0D,true));
         this.goalSelector.addGoal(5, new ApolloHealGoal(this));
-        this.goalSelector.addGoal(6, new WaterAvoidingRandomStrollGoal(this, 1.0D));
-        this.goalSelector.addGoal(7, new RandomLookAroundGoal(this));
-        this.targetSelector.addGoal(8, (new HurtByTargetGoal(this)).setAlertOthers());
-        this.targetSelector.addGoal(9, new NearestAttackableTargetGoal<>(this, Player.class, true));
+        this.goalSelector.addGoal(6, new ApolloTeleportGoal(this));
+        this.goalSelector.addGoal(7, new WaterAvoidingRandomStrollGoal(this, 1.0D));
+        this.goalSelector.addGoal(8, new RandomLookAroundGoal(this));
+        this.targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(this, Player.class, true));
+        this.targetSelector.addGoal(2, (new HurtByTargetGoal(this)).setAlertOthers());
     }
 
 //    @Override
@@ -264,7 +267,7 @@ public class ApolloBoss extends Monster implements IAnimatable {
         Vec3 viewVector = targetPos.subtract(startPos).normalize();
 
         // ビームの最大距離
-        double maxDistance = 20.0D;
+        double maxDistance = 60.0D;
 
         // 実際にビームが何かに当たるかを計算（レイキャスト）
         Vec3 endPos = startPos.add(viewVector.scale(maxDistance));
@@ -311,20 +314,51 @@ public class ApolloBoss extends Monster implements IAnimatable {
         this.level.explode(this, endPos.x, endPos.y, endPos.z, 2.0F, Explosion.BlockInteraction.NONE);
 
         // パーティクル描画（簡易なもの）
-        ServerLevel serverLevel = (ServerLevel) this.level;
-        double distance = startPos.distanceTo(endPos);
-        for (double d = 0; d < distance; d += 0.5D) {
-            double progress = d / distance;
-            double x = startPos.x + (endPos.x - startPos.x) * progress;
-            double y = startPos.y + (endPos.y - startPos.y) * progress;
-            double z = startPos.z + (endPos.z - startPos.z) * progress;
+        // らせんパーティクル生成
+        this.spawnHelixParticles(startPos, endPos, 1.0);
+        this.spawnHelixParticles(startPos, endPos, 2.0);
+    }
 
-            // アポロチョコ色のダストパーティクル
-            serverLevel.sendParticles(new DustParticleOptions(new Vector3f(1.0F, 0.4F, 0.7F), 1.0F), x, y, z, 1, 0, 0, 0, 0);
-            // たまに茶色を混ぜる
-            if (this.random.nextFloat() < 0.3F) {
-                serverLevel.sendParticles(new DustParticleOptions(new Vector3f(0.4F, 0.2F, 0.1F), 1.0F), x, y, z, 1, 0, 0, 0, 0);
-            }
+    public void spawnHelixParticles(Vec3 startPos, Vec3 endPos, double helixRadius) {
+        if (!(this.level instanceof ServerLevel serverLevel)) return;
+
+        int helixLoops = 5;
+
+        Vec3 beamDir = endPos.subtract(startPos).normalize();
+        double distance = startPos.distanceTo(endPos);
+
+        // perpendicular vector
+        Vec3 perp = beamDir.cross(new Vec3(0, 1, 0));
+        if (perp.lengthSqr() < 0.001) {
+            perp = beamDir.cross(new Vec3(1, 0, 0));
+        }
+        perp = perp.normalize();
+
+        Vec3 perp2 = beamDir.cross(perp).normalize();
+
+        int helixPoints = (int)(distance * 4);
+
+        for (int i = 0; i < helixPoints; i++) {
+            double t = (double) i / helixPoints;
+            double height = distance * t;
+
+            double angle = 2 * Math.PI * helixLoops * t;
+
+            double offsetX = helixRadius * Math.cos(angle);
+            double offsetY = helixRadius * Math.sin(angle);
+
+            double cx = startPos.x + beamDir.x * height;
+            double cy = startPos.y + beamDir.y * height;
+            double cz = startPos.z + beamDir.z * height;
+
+            Vec3 helixOffset = perp.scale(offsetX).add(perp2.scale(offsetY));
+            Vec3 finalPos = new Vec3(cx, cy, cz).add(helixOffset);
+
+            serverLevel.sendParticles(
+                    new DustParticleOptions(new Vector3f(1.0F, 0.1F, 0.9F), 1.0F),
+                    finalPos.x, finalPos.y, finalPos.z,
+                    3, 0, 0, 0, 0
+            );
         }
     }
 
